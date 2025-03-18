@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -20,7 +19,6 @@ const EditorPage = () => {
   const [selectedLayerIndex, setSelectedLayerIndex] = useState<number | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  // Add a default text layer when a new image is uploaded
   useEffect(() => {
     if (image && textLayers.length === 0) {
       addNewTextLayer();
@@ -91,36 +89,53 @@ const EditorPage = () => {
     if (!canvasRef.current || !image) return;
     
     try {
-      // Improved html2canvas configuration for better text rendering
-      const canvas = await html2canvas(canvasRef.current, {
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: null,
-        scale: 2, // Higher scale for better quality
-        logging: false,
-        onclone: (documentClone) => {
-          // Find all text elements in the cloned document
-          const textElements = documentClone.querySelectorAll('[data-text-layer="true"]');
-          
-          // Ensure text elements have correct styling in the cloned document
-          textElements.forEach((el) => {
-            const element = el as HTMLElement;
-            if (element.style.mixBlendMode) {
-              // Force normal blend mode for the download to ensure text is visible
-              element.style.mixBlendMode = 'normal';
-              
-              // Ensure text color is properly applied
-              if (element.style.color) {
-                element.style.color = element.style.color;
-              }
-            }
+      const canvasClone = canvasRef.current.cloneNode(true) as HTMLElement;
+      
+      canvasClone.style.position = 'absolute';
+      canvasClone.style.left = '-9999px';
+      canvasClone.style.top = '-9999px';
+      document.body.appendChild(canvasClone);
+      
+      const textElements = canvasClone.querySelectorAll('[data-text-layer="true"]');
+      const originalStyles: { el: HTMLElement, blendMode: string }[] = [];
+      
+      textElements.forEach((el) => {
+        const element = el as HTMLElement;
+        if (element.style.mixBlendMode) {
+          originalStyles.push({
+            el: element,
+            blendMode: element.style.mixBlendMode
           });
         }
       });
       
+      const canvasWithBlendModes = await html2canvas(canvasClone, {
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+        scale: 2,
+        logging: false
+      });
+      
+      originalStyles.forEach(({el}) => {
+        el.style.mixBlendMode = 'normal';
+      });
+      
+      const canvasNormalBlend = await html2canvas(canvasClone, {
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+        scale: 2,
+        logging: false
+      });
+      
+      document.body.removeChild(canvasClone);
+      
+      const finalCanvas = canvasWithBlendModes;
+      
       const link = document.createElement('a');
       link.download = `textblend-${Date.now()}.png`;
-      link.href = canvas.toDataURL('image/png');
+      link.href = finalCanvas.toDataURL('image/png');
       link.click();
       
       toast.success("Image downloaded successfully");
@@ -160,7 +175,6 @@ const EditorPage = () => {
       </header>
 
       <main className="flex-grow flex md:flex-row flex-col">
-        {/* Canvas Area */}
         <div className="w-full md:w-3/5 p-6 flex items-center justify-center min-h-[300px]">
           {!image ? (
             <ImageUploader onImageUpload={handleImageUpload} />
@@ -177,7 +191,6 @@ const EditorPage = () => {
           )}
         </div>
 
-        {/* Controls Area */}
         <div className="w-full md:w-2/5 bg-white border-l p-6 overflow-y-auto">
           {image ? (
             <>

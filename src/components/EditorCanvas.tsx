@@ -135,6 +135,7 @@ const EditorCanvas = ({
               padding: '8px',
             }}
             data-text-layer="true"
+            data-blend-mode={layer.blendMode}
             onMouseDown={(e) => handleMouseDown(e, index)}
           >
             {layer.text}

@@ -75,6 +75,20 @@ const TextEditor = ({ layer, onChange }: TextEditorProps) => {
 
       <div className="space-y-3">
         <div className="flex justify-between items-center">
+          <Label>Font Size</Label>
+          <span className="text-xs">{layer.fontSize}px</span>
+        </div>
+        <Slider
+          value={[layer.fontSize]}
+          min={10}
+          max={200}
+          step={1}
+          onValueChange={(value) => onChange({ fontSize: value[0] })}
+        />
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
           <Label>Blend Mode</Label>
         </div>
         <Select
