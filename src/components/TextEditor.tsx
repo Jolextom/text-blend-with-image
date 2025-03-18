@@ -3,7 +3,7 @@ import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { TextLayer } from "@/types";
+import { TextLayer, MixBlendMode } from "@/types";
 
 interface TextEditorProps {
   layer: TextLayer;
@@ -20,7 +20,7 @@ const TextEditor = ({ layer, onChange }: TextEditorProps) => {
     { value: "Courier New", label: "Courier New" },
   ];
 
-  const blendModes = [
+  const blendModes: { value: MixBlendMode; label: string }[] = [
     { value: "normal", label: "Normal" },
     { value: "multiply", label: "Multiply" },
     { value: "screen", label: "Screen" },
@@ -78,8 +78,8 @@ const TextEditor = ({ layer, onChange }: TextEditorProps) => {
           <Label>Blend Mode</Label>
         </div>
         <Select
-          value={layer.blendMode || "normal"}
-          onValueChange={(value) => onChange({ blendMode: value })}
+          value={layer.blendMode}
+          onValueChange={(value: MixBlendMode) => onChange({ blendMode: value })}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select blend mode" />
