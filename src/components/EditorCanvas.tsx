@@ -1,4 +1,3 @@
-
 import { useRef, useEffect, useState } from "react";
 import { TextLayer } from "@/types";
 
@@ -131,10 +130,11 @@ const EditorCanvas = ({
               fontWeight: layer.fontWeight,
               color: layer.color,
               opacity: layer.opacity,
-              mixBlendMode: layer.blendMode || "normal",
+              mixBlendMode: layer.blendMode,
               userSelect: 'none',
               padding: '8px',
             }}
+            data-text-layer="true"
             onMouseDown={(e) => handleMouseDown(e, index)}
           >
             {layer.text}

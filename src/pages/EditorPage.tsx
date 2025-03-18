@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -90,10 +91,31 @@ const EditorPage = () => {
     if (!canvasRef.current || !image) return;
     
     try {
+      // Improved html2canvas configuration for better text rendering
       const canvas = await html2canvas(canvasRef.current, {
         useCORS: true,
         allowTaint: true,
         backgroundColor: null,
+        scale: 2, // Higher scale for better quality
+        logging: false,
+        onclone: (documentClone) => {
+          // Find all text elements in the cloned document
+          const textElements = documentClone.querySelectorAll('[data-text-layer="true"]');
+          
+          // Ensure text elements have correct styling in the cloned document
+          textElements.forEach((el) => {
+            const element = el as HTMLElement;
+            if (element.style.mixBlendMode) {
+              // Force normal blend mode for the download to ensure text is visible
+              element.style.mixBlendMode = 'normal';
+              
+              // Ensure text color is properly applied
+              if (element.style.color) {
+                element.style.color = element.style.color;
+              }
+            }
+          });
+        }
       });
       
       const link = document.createElement('a');
