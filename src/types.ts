@@ -12,4 +12,5 @@ export interface TextLayer {
   rotation: number;
   horizontalTilt: number;
   verticalTilt: number;
+  blendMode: string;
 }

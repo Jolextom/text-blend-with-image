@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -12,6 +11,7 @@ import TextEditor from "@/components/TextEditor";
 import ImageUploader from "@/components/ImageUploader";
 import EditorCanvas from "@/components/EditorCanvas";
 import { TextLayer } from "@/types";
+import html2canvas from "html2canvas";
 
 const EditorPage = () => {
   const [image, setImage] = useState<string | null>(null);
@@ -40,6 +40,7 @@ const EditorPage = () => {
       rotation: 0,
       horizontalTilt: 0,
       verticalTilt: 0,
+      blendMode: "normal",
     };
     
     setTextLayers([...textLayers, newLayer]);
@@ -85,11 +86,26 @@ const EditorPage = () => {
     toast.success("Image uploaded successfully");
   };
 
-  const handleSaveImage = () => {
+  const handleSaveImage = async () => {
     if (!canvasRef.current || !image) return;
     
-    // In a real implementation, this would capture the canvas and save as an image
-    toast.success("Image saved successfully");
+    try {
+      const canvas = await html2canvas(canvasRef.current, {
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+      });
+      
+      const link = document.createElement('a');
+      link.download = `textblend-${Date.now()}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      
+      toast.success("Image downloaded successfully");
+    } catch (error) {
+      console.error("Error downloading image:", error);
+      toast.error("Failed to download image");
+    }
   };
 
   const selectedLayer = selectedLayerIndex !== null ? textLayers[selectedLayerIndex] : null;

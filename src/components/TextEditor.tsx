@@ -20,6 +20,25 @@ const TextEditor = ({ layer, onChange }: TextEditorProps) => {
     { value: "Courier New", label: "Courier New" },
   ];
 
+  const blendModes = [
+    { value: "normal", label: "Normal" },
+    { value: "multiply", label: "Multiply" },
+    { value: "screen", label: "Screen" },
+    { value: "overlay", label: "Overlay" },
+    { value: "darken", label: "Darken" },
+    { value: "lighten", label: "Lighten" },
+    { value: "color-dodge", label: "Color Dodge" },
+    { value: "color-burn", label: "Color Burn" },
+    { value: "hard-light", label: "Hard Light" },
+    { value: "soft-light", label: "Soft Light" },
+    { value: "difference", label: "Difference" },
+    { value: "exclusion", label: "Exclusion" },
+    { value: "hue", label: "Hue" },
+    { value: "saturation", label: "Saturation" },
+    { value: "color", label: "Color" },
+    { value: "luminosity", label: "Luminosity" },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="space-y-3">
@@ -48,6 +67,27 @@ const TextEditor = ({ layer, onChange }: TextEditorProps) => {
             {fonts.map((font) => (
               <SelectItem key={font.value} value={font.value} style={{ fontFamily: font.value }}>
                 {font.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <Label>Blend Mode</Label>
+        </div>
+        <Select
+          value={layer.blendMode || "normal"}
+          onValueChange={(value) => onChange({ blendMode: value })}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select blend mode" />
+          </SelectTrigger>
+          <SelectContent>
+            {blendModes.map((mode) => (
+              <SelectItem key={mode.value} value={mode.value}>
+                {mode.label}
               </SelectItem>
             ))}
           </SelectContent>

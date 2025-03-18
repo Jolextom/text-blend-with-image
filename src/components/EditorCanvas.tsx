@@ -131,6 +131,7 @@ const EditorCanvas = ({
               fontWeight: layer.fontWeight,
               color: layer.color,
               opacity: layer.opacity,
+              mixBlendMode: layer.blendMode || "normal",
               userSelect: 'none',
               padding: '8px',
             }}

@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ChevronRight, Type, Image as ImageIcon, Sliders } from "lucide-react";
+import { ChevronRight, Type, Image as ImageIcon, Sliders, Blend } from "lucide-react";
 
 const LandingPage = () => {
   return (
@@ -23,30 +23,19 @@ const LandingPage = () => {
         {/* Hero Section */}
         <section className="py-20 bg-gradient-to-r from-gray-50 to-gray-100">
           <div className="container max-w-7xl mx-auto px-4">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div className="space-y-6">
-                <h1 className="font-display text-5xl sm:text-6xl font-bold leading-tight">
-                  Blend Text with Images Seamlessly
-                </h1>
-                <p className="text-lg text-gray-600 max-w-lg">
-                  Create stunning visuals by blending text with your images. Perfect for social media, 
-                  marketing materials, or creative projects.
-                </p>
-                <div className="pt-4">
-                  <Link to="/editor">
-                    <Button size="lg" className="mr-4">
-                      Get Started <ChevronRight size={16} className="ml-2" />
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-              <div className="rounded-lg overflow-hidden shadow-xl bg-white p-3">
-                <img 
-                  src="/lovable-uploads/ed4c2994-4582-4afb-a114-bed75ceeadaf.png" 
-                  alt="TextBlend Editor Preview" 
-                  className="rounded border w-full h-auto" 
-                />
-              </div>
+            <div className="text-center max-w-3xl mx-auto">
+              <h1 className="font-display text-5xl sm:text-6xl font-bold leading-tight mb-6">
+                Blend Text with Images Seamlessly
+              </h1>
+              <p className="text-lg text-gray-600 mb-8">
+                Create stunning visuals by blending text with your images. Perfect for social media, 
+                marketing materials, or creative projects.
+              </p>
+              <Link to="/editor">
+                <Button size="lg">
+                  Get Started <ChevronRight size={16} className="ml-2" />
+                </Button>
+              </Link>
             </div>
           </div>
         </section>
@@ -91,6 +80,29 @@ const LandingPage = () => {
                   Precise adjustment controls for positioning, rotation, tilt, and text styling for professional results.
                 </p>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Blend Modes Section - New */}
+        <section className="py-20 bg-gray-50">
+          <div className="container max-w-7xl mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className="font-display text-3xl sm:text-4xl font-bold mb-4">Blend Modes</h2>
+              <p className="text-gray-600 max-w-2xl mx-auto">
+                Create unique effects with various blend modes like Exclusion, Difference, Screen, and more
+              </p>
+            </div>
+            
+            <div className="grid md:grid-cols-4 gap-6">
+              {["Normal", "Multiply", "Screen", "Overlay", "Difference", "Exclusion", "Color Dodge", "Color Burn"].map((mode) => (
+                <div key={mode} className="bg-white p-6 rounded-lg shadow-sm text-center">
+                  <h3 className="font-medium mb-2">{mode}</h3>
+                  <div className="h-24 bg-gradient-to-r from-primary/20 to-primary/40 rounded-md flex items-center justify-center">
+                    <span className="text-lg font-semibold">Aa</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
