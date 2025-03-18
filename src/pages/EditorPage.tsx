@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -89,53 +90,53 @@ const EditorPage = () => {
     if (!canvasRef.current || !image) return;
     
     try {
-      const canvasClone = canvasRef.current.cloneNode(true) as HTMLElement;
+      // Create a higher quality clone of the canvas for rendering
+      toast.info("Generating image...");
       
+      // Clone the node and position it offscreen
+      const canvasClone = canvasRef.current.cloneNode(true) as HTMLElement;
       canvasClone.style.position = 'absolute';
       canvasClone.style.left = '-9999px';
       canvasClone.style.top = '-9999px';
       document.body.appendChild(canvasClone);
       
-      const textElements = canvasClone.querySelectorAll('[data-text-layer="true"]');
-      const originalStyles: { el: HTMLElement, blendMode: string }[] = [];
+      // Force browser to calculate layout
+      void canvasClone.offsetWidth;
       
+      // Get all text layers and ensure blend modes are properly set
+      const textElements = canvasClone.querySelectorAll('[data-text-layer="true"]');
       textElements.forEach((el) => {
         const element = el as HTMLElement;
-        if (element.style.mixBlendMode) {
-          originalStyles.push({
-            el: element,
-            blendMode: element.style.mixBlendMode
+        const blendMode = element.getAttribute('data-blend-mode') || 'normal';
+        // Explicitly set the mix-blend-mode to ensure it's applied
+        element.style.mixBlendMode = blendMode;
+      });
+      
+      // Capture the image with proper blend modes
+      const canvas = await html2canvas(canvasClone, {
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+        scale: 3, // Higher scale for better quality
+        logging: false,
+        onclone: (documentClone) => {
+          // Additional processing in the cloned document
+          const clonedTextElements = documentClone.querySelectorAll('[data-text-layer="true"]');
+          clonedTextElements.forEach((el) => {
+            const element = el as HTMLElement;
+            const blendMode = element.getAttribute('data-blend-mode') || 'normal';
+            element.style.mixBlendMode = blendMode;
           });
         }
       });
       
-      const canvasWithBlendModes = await html2canvas(canvasClone, {
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: null,
-        scale: 2,
-        logging: false
-      });
-      
-      originalStyles.forEach(({el}) => {
-        el.style.mixBlendMode = 'normal';
-      });
-      
-      const canvasNormalBlend = await html2canvas(canvasClone, {
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: null,
-        scale: 2,
-        logging: false
-      });
-      
+      // Clean up the DOM
       document.body.removeChild(canvasClone);
       
-      const finalCanvas = canvasWithBlendModes;
-      
+      // Create download link
       const link = document.createElement('a');
       link.download = `textblend-${Date.now()}.png`;
-      link.href = finalCanvas.toDataURL('image/png');
+      link.href = canvas.toDataURL('image/png');
       link.click();
       
       toast.success("Image downloaded successfully");
