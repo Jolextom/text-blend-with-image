@@ -1,42 +1,71 @@
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Download } from "lucide-react";
+import { Download, Save, Settings } from "lucide-react";
 import { Link } from "react-router-dom";
-import { toast } from "sonner";
+import { UserMenu } from "@/components/UserMenu";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 interface EditorHeaderProps {
   image: string | null;
-  onSaveImage: () => void;
+  onSaveImage: () => Promise<void>;
 }
 
 const EditorHeader = ({ image, onSaveImage }: EditorHeaderProps) => {
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!image) return;
+    
+    setIsSaving(true);
+    try {
+      await onSaveImage();
+    } catch (error) {
+      console.error("Error saving image:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
-    <header className="bg-white border-b py-4">
-      <div className="container max-w-7xl mx-auto px-4 flex justify-between items-center">
-        <div className="flex items-center">
-          <Link to="/" className="mr-4">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft size={18} />
-            </Button>
+    <header className="sticky top-0 z-10 border-b bg-background py-3 px-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link to="/" className="font-display text-xl font-bold">
+            TextBlend
           </Link>
-          <h1 className="font-display text-xl font-bold">TextBlend Editor</h1>
         </div>
-        <div className="flex items-center space-x-3">
-          <Button 
-            variant="outline" 
-            onClick={() => toast.info("1 generation left")}
-            className="text-sm"
-          >
-            1 generation left
-          </Button>
-          <Button 
-            variant="outline" 
-            disabled={!image} 
-            onClick={onSaveImage}
-            className="flex items-center"
-          >
-            <Download size={16} className="mr-2" /> Save image
-          </Button>
+        
+        <div className="flex items-center gap-3">
+          {image && (
+            <Button 
+              variant="outline" 
+              onClick={handleSave} 
+              disabled={isSaving}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Download
+            </Button>
+          )}
+          
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Settings className="h-4 w-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Editor Settings</SheetTitle>
+                <SheetDescription>
+                  Configure the editor settings here.
+                </SheetDescription>
+              </SheetHeader>
+              {/* Settings content here */}
+            </SheetContent>
+          </Sheet>
+          
+          <UserMenu />
         </div>
       </div>
     </header>

@@ -1,9 +1,11 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ChevronRight, Type, Image as ImageIcon, Sliders, Blend } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const LandingPage = () => {
+  const { session } = useAuth();
+
   return (
     <div className="min-h-screen flex flex-col">
       <header className="border-b py-4">
@@ -12,9 +14,15 @@ const LandingPage = () => {
             <span className="font-display text-2xl font-bold">TextBlend</span>
           </div>
           <div className="flex items-center space-x-4">
-            <Link to="/editor">
-              <Button variant="outline">Try Editor</Button>
-            </Link>
+            {session ? (
+              <Link to="/editor">
+                <Button variant="outline">Go to Editor</Button>
+              </Link>
+            ) : (
+              <Link to="/auth">
+                <Button variant="outline">Sign In</Button>
+              </Link>
+            )}
           </div>
         </div>
       </header>
@@ -31,7 +39,7 @@ const LandingPage = () => {
                 Create stunning visuals by blending text with your images. Perfect for social media, 
                 marketing materials, or creative projects.
               </p>
-              <Link to="/editor">
+              <Link to={session ? "/editor" : "/auth"}>
                 <Button size="lg">
                   Get Started <ChevronRight size={16} className="ml-2" />
                 </Button>
@@ -114,7 +122,7 @@ const LandingPage = () => {
             <p className="text-gray-300 max-w-2xl mx-auto mb-8">
               Start creating beautiful text and image compositions in just a few clicks.
             </p>
-            <Link to="/editor">
+            <Link to={session ? "/editor" : "/auth"}>
               <Button size="lg" variant="secondary">
                 Try the Editor Now
               </Button>
