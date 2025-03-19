@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 
 const AuthPage = () => {
   const [loading, setLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // Check if user is already logged in
@@ -38,20 +39,27 @@ const AuthPage = () => {
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
+      setAuthError(null);
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: window.location.origin + "/editor"
+          redirectTo: `${window.location.origin}/auth`
         }
       });
 
       if (error) {
+        console.error("Auth error:", error);
+        setAuthError(error.message);
         toast.error(error.message);
       }
     } catch (error) {
+      console.error("Unexpected auth error:", error);
       if (error instanceof Error) {
+        setAuthError(error.message);
         toast.error(error.message);
       } else {
+        setAuthError("An unexpected error occurred");
         toast.error("An unexpected error occurred");
       }
     } finally {
@@ -73,6 +81,13 @@ const AuthPage = () => {
         <div className="bg-white rounded-lg shadow-md p-8 max-w-md w-full">
           <h1 className="text-2xl font-bold text-center mb-6">Sign in to TextBlend</h1>
           
+          {authError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-md text-sm">
+              <p><strong>Authentication Error:</strong> {authError}</p>
+              <p className="mt-2 text-xs">Please make sure your Supabase project is properly configured with Google OAuth.</p>
+            </div>
+          )}
+          
           <div className="space-y-4">
             <Button 
               onClick={handleGoogleSignIn}
@@ -87,13 +102,22 @@ const AuthPage = () => {
                   <path fill="#EA4335" d="M -14.754 43.989 C -12.984 43.989 -11.404 44.599 -10.154 45.789 L -6.734 42.369 C -8.804 40.429 -11.514 39.239 -14.754 39.239 C -19.444 39.239 -23.494 41.939 -25.464 45.859 L -21.484 48.949 C -20.534 46.099 -17.884 43.989 -14.754 43.989 Z" />
                 </g>
               </svg>
-              Sign in with Google
+              {loading ? "Connecting..." : "Sign in with Google"}
             </Button>
           </div>
           
-          <p className="text-center text-sm text-gray-500 mt-6">
-            By signing in, you agree to our Terms of Service and Privacy Policy.
-          </p>
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-500 mb-4">
+              By signing in, you agree to our Terms of Service and Privacy Policy.
+            </p>
+            <div className="p-3 bg-blue-50 border border-blue-200 text-blue-700 rounded-md text-xs">
+              <p><strong>Note for setup:</strong> Make sure to configure your Supabase project with the correct URL settings:</p>
+              <ul className="list-disc pl-5 mt-1 text-left">
+                <li>Site URL: {window.location.origin}</li>
+                <li>Redirect URL: {window.location.origin}/auth</li>
+              </ul>
+            </div>
+          </div>
         </div>
       </main>
 
