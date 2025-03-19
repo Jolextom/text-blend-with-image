@@ -29,7 +29,12 @@ const EditorHeader = ({ image, onSaveImage }: EditorHeaderProps) => {
           >
             1 generation left
           </Button>
-          <Button variant="outline" disabled={!image} onClick={onSaveImage}>
+          <Button 
+            variant="outline" 
+            disabled={!image} 
+            onClick={onSaveImage}
+            className="flex items-center"
+          >
             <Download size={16} className="mr-2" /> Save image
           </Button>
         </div>
