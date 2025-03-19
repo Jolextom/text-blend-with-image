@@ -90,50 +90,57 @@ const EditorPage = () => {
     if (!canvasRef.current || !image) return;
     
     try {
-      // Create a higher quality clone of the canvas for rendering
-      toast.info("Generating image...");
+      toast.info("Processing image for download...");
       
-      // Clone the node and position it offscreen
+      // Create a higher resolution clone for better quality
       const canvasClone = canvasRef.current.cloneNode(true) as HTMLElement;
+      
+      // Position off-screen for rendering
       canvasClone.style.position = 'absolute';
       canvasClone.style.left = '-9999px';
       canvasClone.style.top = '-9999px';
+      
+      // Insert into DOM temporarily
       document.body.appendChild(canvasClone);
       
-      // Force browser to calculate layout
+      // Force a layout calculation
       void canvasClone.offsetWidth;
       
-      // Get all text layers and ensure blend modes are properly set
-      const textElements = canvasClone.querySelectorAll('[data-text-layer="true"]');
-      textElements.forEach((el) => {
-        const element = el as HTMLElement;
-        const blendMode = element.getAttribute('data-blend-mode') || 'normal';
-        // Explicitly set the mix-blend-mode to ensure it's applied
-        element.style.mixBlendMode = blendMode;
+      // Ensure all text layers have blend modes correctly applied
+      const textLayers = canvasClone.querySelectorAll('[data-text-layer="true"]');
+      textLayers.forEach((layer) => {
+        const element = layer as HTMLElement;
+        const blendMode = element.getAttribute('data-blend-mode');
+        if (blendMode) {
+          // Explicitly set mix-blend-mode as inline style for html2canvas
+          element.style.mixBlendMode = blendMode;
+        }
       });
       
-      // Capture the image with proper blend modes
+      // Use html2canvas with enhanced settings
       const canvas = await html2canvas(canvasClone, {
         useCORS: true,
         allowTaint: true,
         backgroundColor: null,
-        scale: 3, // Higher scale for better quality
+        scale: 4, // Higher scale for better quality
         logging: false,
-        onclone: (documentClone) => {
-          // Additional processing in the cloned document
-          const clonedTextElements = documentClone.querySelectorAll('[data-text-layer="true"]');
-          clonedTextElements.forEach((el) => {
-            const element = el as HTMLElement;
-            const blendMode = element.getAttribute('data-blend-mode') || 'normal';
-            element.style.mixBlendMode = blendMode;
+        onclone: (clonedDoc) => {
+          // Additional processing on cloned document
+          const clonedTextLayers = clonedDoc.querySelectorAll('[data-text-layer="true"]');
+          clonedTextLayers.forEach((layer) => {
+            const element = layer as HTMLElement;
+            const blendMode = element.getAttribute('data-blend-mode');
+            if (blendMode) {
+              element.style.mixBlendMode = blendMode;
+            }
           });
         }
       });
       
-      // Clean up the DOM
+      // Clean up
       document.body.removeChild(canvasClone);
       
-      // Create download link
+      // Create and trigger download
       const link = document.createElement('a');
       link.download = `textblend-${Date.now()}.png`;
       link.href = canvas.toDataURL('image/png');
