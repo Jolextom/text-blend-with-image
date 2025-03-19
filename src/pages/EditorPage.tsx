@@ -1,18 +1,12 @@
 
 import { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Plus, Trash2, Copy, Download, Upload, ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import TextEditor from "@/components/TextEditor";
 import ImageUploader from "@/components/ImageUploader";
 import EditorCanvas from "@/components/EditorCanvas";
 import { TextLayer } from "@/types";
-import html2canvas from "html2canvas";
+import EditorHeader from "@/components/editor/EditorHeader";
+import EditorSidebar from "@/components/editor/EditorSidebar";
+import { exportCanvasToImage } from "@/components/editor/ImageExporter";
 
 const EditorPage = () => {
   const [image, setImage] = useState<string | null>(null);
@@ -87,100 +81,15 @@ const EditorPage = () => {
   };
 
   const handleSaveImage = async () => {
-    if (!canvasRef.current || !image) return;
-    
-    try {
-      toast.info("Processing image for download...");
-      
-      // Create a higher resolution clone for better quality
-      const canvasClone = canvasRef.current.cloneNode(true) as HTMLElement;
-      
-      // Position off-screen for rendering
-      canvasClone.style.position = 'absolute';
-      canvasClone.style.left = '-9999px';
-      canvasClone.style.top = '-9999px';
-      
-      // Insert into DOM temporarily
-      document.body.appendChild(canvasClone);
-      
-      // Force a layout calculation
-      void canvasClone.offsetWidth;
-      
-      // Ensure all text layers have blend modes correctly applied
-      const textLayers = canvasClone.querySelectorAll('[data-text-layer="true"]');
-      textLayers.forEach((layer) => {
-        const element = layer as HTMLElement;
-        const blendMode = element.getAttribute('data-blend-mode');
-        if (blendMode) {
-          // Explicitly set mix-blend-mode as inline style for html2canvas
-          element.style.mixBlendMode = blendMode;
-        }
-      });
-      
-      // Use html2canvas with enhanced settings
-      const canvas = await html2canvas(canvasClone, {
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: null,
-        scale: 4, // Higher scale for better quality
-        logging: false,
-        onclone: (clonedDoc) => {
-          // Additional processing on cloned document
-          const clonedTextLayers = clonedDoc.querySelectorAll('[data-text-layer="true"]');
-          clonedTextLayers.forEach((layer) => {
-            const element = layer as HTMLElement;
-            const blendMode = element.getAttribute('data-blend-mode');
-            if (blendMode) {
-              element.style.mixBlendMode = blendMode;
-            }
-          });
-        }
-      });
-      
-      // Clean up
-      document.body.removeChild(canvasClone);
-      
-      // Create and trigger download
-      const link = document.createElement('a');
-      link.download = `textblend-${Date.now()}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-      
-      toast.success("Image downloaded successfully");
-    } catch (error) {
-      console.error("Error downloading image:", error);
-      toast.error("Failed to download image");
-    }
+    await exportCanvasToImage(canvasRef);
   };
-
-  const selectedLayer = selectedLayerIndex !== null ? textLayers[selectedLayerIndex] : null;
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <header className="bg-white border-b py-4">
-        <div className="container max-w-7xl mx-auto px-4 flex justify-between items-center">
-          <div className="flex items-center">
-            <Link to="/" className="mr-4">
-              <Button variant="ghost" size="icon">
-                <ArrowLeft size={18} />
-              </Button>
-            </Link>
-            <h1 className="font-display text-xl font-bold">TextBlend Editor</h1>
-          </div>
-          <div className="flex items-center space-x-3">
-            <Button 
-              variant="outline" 
-              onClick={() => toast.info("1 generation left")}
-              className="text-sm"
-            >
-              1 generation left
-            </Button>
-            <Button variant="outline" disabled={!image} onClick={handleSaveImage}>
-              <Download size={16} className="mr-2" /> Save image
-            </Button>
-          </div>
-        </div>
-      </header>
+      <EditorHeader 
+        image={image}
+        onSaveImage={handleSaveImage}
+      />
 
       <main className="flex-grow flex md:flex-row flex-col">
         <div className="w-full md:w-3/5 p-6 flex items-center justify-center min-h-[300px]">
@@ -199,54 +108,15 @@ const EditorPage = () => {
           )}
         </div>
 
-        <div className="w-full md:w-2/5 bg-white border-l p-6 overflow-y-auto">
-          {image ? (
-            <>
-              <div className="mb-8">
-                <Button 
-                  variant="secondary" 
-                  className="w-full" 
-                  onClick={addNewTextLayer}
-                >
-                  <Plus size={16} className="mr-2" /> Add New Text Set
-                </Button>
-              </div>
-
-              {textLayers.length > 0 && selectedLayer ? (
-                <div className="space-y-6">
-                  <TextEditor 
-                    layer={selectedLayer}
-                    onChange={(props) => updateTextLayer(selectedLayerIndex!, props)}
-                  />
-
-                  <div className="grid grid-cols-2 gap-3 mt-6">
-                    <Button 
-                      variant="outline"
-                      onClick={() => duplicateTextLayer(selectedLayerIndex!)}
-                    >
-                      <Copy size={16} className="mr-2" /> Duplicate Text Set
-                    </Button>
-                    <Button 
-                      variant="destructive"
-                      onClick={() => removeTextLayer(selectedLayerIndex!)}
-                    >
-                      <Trash2 size={16} className="mr-2" /> Remove Text Set
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-10">
-                  <p className="text-gray-500">Add a text layer to start editing</p>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="text-center py-20">
-              <p className="text-xl font-medium mb-4">Welcome, get started by uploading an image!</p>
-              <p className="text-gray-500">Upload an image to begin adding text</p>
-            </div>
-          )}
-        </div>
+        <EditorSidebar
+          image={image}
+          textLayers={textLayers}
+          selectedLayerIndex={selectedLayerIndex}
+          onAddTextLayer={addNewTextLayer}
+          onUpdateTextLayer={updateTextLayer}
+          onDuplicateTextLayer={duplicateTextLayer}
+          onRemoveTextLayer={removeTextLayer}
+        />
       </main>
     </div>
   );
