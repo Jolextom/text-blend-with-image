@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ const AuthPage = () => {
   const [loading, setLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Check if user is already logged in
   useEffect(() => {
@@ -26,25 +27,46 @@ const AuthPage = () => {
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (session) {
+          console.log("Auth state changed, redirecting to editor", event);
           navigate("/editor");
         }
       }
     );
 
+    // Check for auth error in URL
+    const hashParams = new URLSearchParams(location.hash.substring(1));
+    const error = hashParams.get("error");
+    const errorDescription = hashParams.get("error_description");
+    
+    if (error) {
+      const errorMessage = errorDescription || "Authentication failed";
+      console.error("Auth error from URL:", errorMessage);
+      setAuthError(errorMessage);
+      toast.error(errorMessage);
+    }
+
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, location]);
 
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
       setAuthError(null);
       
+      // Get the current origin for proper redirect
+      const redirectUrl = `${window.location.origin}/editor`;
+      console.log("Redirecting to:", redirectUrl);
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/editor`
+          redirectTo: redirectUrl,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
         }
       });
 
@@ -111,11 +133,13 @@ const AuthPage = () => {
               By signing in, you agree to our Terms of Service and Privacy Policy.
             </p>
             <div className="p-3 bg-blue-50 border border-blue-200 text-blue-700 rounded-md text-xs">
-              <p><strong>Note for setup:</strong> Make sure to configure your Supabase project with the correct URL settings:</p>
+              <p><strong>Configuration Info:</strong></p>
               <ul className="list-disc pl-5 mt-1 text-left">
-                <li>Site URL: {window.location.origin}</li>
-                <li>Redirect URL: {window.location.origin}/auth</li>
+                <li><strong>Site URL:</strong> {window.location.origin}</li>
+                <li><strong>Redirect URL:</strong> {window.location.origin}/editor</li>
+                <li><strong>Current Page:</strong> {window.location.href}</li>
               </ul>
+              <p className="mt-2">Make sure these URLs are configured in both Supabase and Google Cloud Console.</p>
             </div>
           </div>
         </div>
