@@ -7,86 +7,128 @@ export const exportCanvasToImage = async (canvasRef: React.RefObject<HTMLElement
   try {
     toast.info("Processing image for download...");
     
-    // Get the original canvas dimensions
-    const originalWidth = canvasRef.current.offsetWidth;
-    const originalHeight = canvasRef.current.offsetHeight;
+    // Store the original DOM structure
+    const originalElement = canvasRef.current;
     
-    // Create a deep clone of the canvas element
-    const canvasClone = canvasRef.current.cloneNode(true) as HTMLElement;
+    // Get all text layers and their styles before cloning
+    const textLayers = originalElement.querySelectorAll('[data-text-layer="true"]');
+    const textLayerStyles: {element: HTMLElement, styles: Record<string, string>}[] = [];
     
-    // Apply styles to the clone for proper rendering
-    canvasClone.style.position = 'absolute';
-    canvasClone.style.left = '-9999px';
-    canvasClone.style.top = '-9999px';
-    canvasClone.style.width = `${originalWidth}px`;
-    canvasClone.style.height = `${originalHeight}px`;
-    
-    // Insert into DOM temporarily
-    document.body.appendChild(canvasClone);
-    
-    // Force layout calculation
-    void canvasClone.offsetWidth;
-    
-    // Handle text layers with blend modes
-    const processTextLayers = (element: HTMLElement) => {
-      // Find all elements with data-text-layer attribute
-      const textLayers = element.querySelectorAll('[data-text-layer="true"]');
-      textLayers.forEach((layer) => {
-        const textElement = layer as HTMLElement;
-        const blendMode = textElement.getAttribute('data-blend-mode');
-        if (blendMode) {
-          // Apply appropriate styles for blend modes
-          textElement.style.mixBlendMode = blendMode;
-          textElement.style.isolation = 'isolate';
-          
-          // Ensure the element preserves its original appearance
-          const computedStyle = window.getComputedStyle(textElement);
-          textElement.style.color = computedStyle.color;
-          textElement.style.fontFamily = computedStyle.fontFamily;
-          textElement.style.fontSize = computedStyle.fontSize;
-          textElement.style.fontWeight = computedStyle.fontWeight;
-          textElement.style.letterSpacing = computedStyle.letterSpacing;
-          textElement.style.lineHeight = computedStyle.lineHeight;
-          textElement.style.textShadow = computedStyle.textShadow;
-        }
+    textLayers.forEach((layer) => {
+      const element = layer as HTMLElement;
+      const computedStyle = window.getComputedStyle(element);
+      const styles: Record<string, string> = {};
+      
+      // Capture all relevant styles
+      [
+        'color', 'fontFamily', 'fontSize', 'fontWeight', 'letterSpacing', 
+        'lineHeight', 'textShadow', 'mixBlendMode', 'opacity', 'transform',
+        'backgroundColor', 'backgroundImage', 'borderRadius', 'padding',
+        'display', 'position', 'top', 'left', 'width', 'height', 'zIndex'
+      ].forEach(prop => {
+        styles[prop] = computedStyle.getPropertyValue(prop);
       });
-    };
+      
+      textLayerStyles.push({ element, styles });
+    });
     
-    // Process text layers in the clone
-    processTextLayers(canvasClone);
+    // Try a different approach using a two-step rendering process
+    // Step 1: Render the background content
+    const backgroundCanvas = document.createElement('canvas');
+    backgroundCanvas.width = originalElement.offsetWidth * 2;
+    backgroundCanvas.height = originalElement.offsetHeight * 2;
     
-    // Create a renderer configuration for html2canvas
-    const renderOptions = {
+    // First, temporarily hide text layers
+    textLayers.forEach(layer => {
+      (layer as HTMLElement).style.visibility = 'hidden';
+    });
+    
+    // Render the background
+    const bgContext = backgroundCanvas.getContext('2d');
+    
+    // Render the background content
+    const backgroundImage = await html2canvas(originalElement, {
       useCORS: true,
       allowTaint: true,
-      backgroundColor: null, // Transparent background
-      scale: 3, // Higher scale for better quality
+      backgroundColor: null,
+      scale: 2,
       logging: false,
-      onclone: (clonedDoc: Document) => {
-        const clonedElement = clonedDoc.body.querySelector('[data-canvas-root="true"]') || 
-                            clonedDoc.body.firstElementChild;
-        if (clonedElement) {
-          processTextLayers(clonedElement as HTMLElement);
-        }
-      }
-    };
+    });
     
-    // Generate canvas
-    const canvas = await html2canvas(canvasClone, renderOptions);
+    // Restore text layer visibility
+    textLayers.forEach(layer => {
+      (layer as HTMLElement).style.visibility = 'visible';
+    });
     
-    // Clean up
-    document.body.removeChild(canvasClone);
-    
-    // Create a new canvas with the correct dimensions and copy the content
+    // Step 2: Set up final canvas
     const finalCanvas = document.createElement('canvas');
-    finalCanvas.width = canvas.width;
-    finalCanvas.height = canvas.height;
+    finalCanvas.width = originalElement.offsetWidth * 2;
+    finalCanvas.height = originalElement.offsetHeight * 2;
     const ctx = finalCanvas.getContext('2d');
     
-    if (ctx) {
-      // For better blend mode support, use composite operations
+    if (!ctx || !bgContext) {
+      throw new Error("Failed to get canvas context");
+    }
+    
+    // Draw the background first
+    ctx.drawImage(backgroundImage, 0, 0);
+    
+    // Now render each text layer with its proper blend mode
+    for (const { element, styles } of textLayerStyles) {
+      const blendMode = element.getAttribute('data-blend-mode') || styles.mixBlendMode;
+      if (!blendMode) continue;
+      
+      // Set the blend mode
+      ctx.globalCompositeOperation = mapCssBlendToCanvas(blendMode);
+      
+      // Get the position of the text element relative to the canvas
+      const rect = element.getBoundingClientRect();
+      const canvasRect = originalElement.getBoundingClientRect();
+      
+      const x = (rect.left - canvasRect.left) * 2;
+      const y = (rect.top - canvasRect.top) * 2;
+      const width = rect.width * 2;
+      const height = rect.height * 2;
+      
+      // Create a temporary canvas for this text element
+      const textCanvas = document.createElement('canvas');
+      textCanvas.width = width;
+      textCanvas.height = height;
+      
+      // Clone and isolate the text element
+      const textClone = element.cloneNode(true) as HTMLElement;
+      textClone.style.position = 'absolute';
+      textClone.style.left = '0';
+      textClone.style.top = '0';
+      textClone.style.width = `${rect.width}px`;
+      textClone.style.height = `${rect.height}px`;
+      
+      // Create a temporary container
+      const tempContainer = document.createElement('div');
+      tempContainer.style.position = 'absolute';
+      tempContainer.style.left = '-9999px';
+      tempContainer.style.top = '-9999px';
+      tempContainer.style.width = `${rect.width}px`;
+      tempContainer.style.height = `${rect.height}px`;
+      tempContainer.style.overflow = 'hidden';
+      tempContainer.appendChild(textClone);
+      document.body.appendChild(tempContainer);
+      
+      // Render the text element
+      const textImage = await html2canvas(textClone, {
+        backgroundColor: null,
+        scale: 2,
+        logging: false,
+      });
+      
+      // Draw the text with the proper blend mode
+      ctx.drawImage(textImage, x, y);
+      
+      // Clean up
+      document.body.removeChild(tempContainer);
+      
+      // Reset blend mode after drawing this layer
       ctx.globalCompositeOperation = 'source-over';
-      ctx.drawImage(canvas, 0, 0);
     }
     
     // Create and trigger download
@@ -103,3 +145,27 @@ export const exportCanvasToImage = async (canvasRef: React.RefObject<HTMLElement
     toast.error("Failed to download image");
   }
 };
+
+// Helper function to map CSS blend modes to canvas composite operations
+function mapCssBlendToCanvas(blendMode: string): GlobalCompositeOperation {
+  const map: Record<string, GlobalCompositeOperation> = {
+    'normal': 'source-over',
+    'multiply': 'multiply',
+    'screen': 'screen',
+    'overlay': 'overlay',
+    'darken': 'darken',
+    'lighten': 'lighten',
+    'color-dodge': 'color-dodge',
+    'color-burn': 'color-burn',
+    'hard-light': 'hard-light',
+    'soft-light': 'soft-light',
+    'difference': 'difference',
+    'exclusion': 'exclusion',
+    'hue': 'hue',
+    'saturation': 'saturation',
+    'color': 'color',
+    'luminosity': 'luminosity'
+  };
+  
+  return map[blendMode] || 'source-over';
+}
