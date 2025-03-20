@@ -122,17 +122,27 @@ const AuthPage = () => {
       setLoading(true);
       setAuthError(null);
       
-      const { error } = await supabase.auth.signInWithPassword({
-        email: values.email,
+      console.log("Attempting to sign in with:", { email: values.email });
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: values.email.trim().toLowerCase(),
         password: values.password,
       });
+
+      console.log("Sign-in response:", { data, error });
 
       if (error) {
         console.error("Sign in error:", error);
         setAuthError(error.message);
-        toast.error(error.message);
-      } else {
+        toast.error("Invalid login credentials. Please check your email and password.");
+      } else if (data.user) {
+        console.log("Signed in successfully with user:", data.user);
         toast.success("Signed in successfully!");
+        navigate("/editor");
+      } else {
+        console.error("No user returned from sign in");
+        setAuthError("An unexpected error occurred during sign in");
+        toast.error("An unexpected error occurred during sign in");
       }
     } catch (error) {
       console.error("Unexpected sign in error:", error);
@@ -154,7 +164,7 @@ const AuthPage = () => {
       setAuthError(null);
       
       const { error } = await supabase.auth.signUp({
-        email: values.email,
+        email: values.email.trim().toLowerCase(),
         password: values.password,
         options: {
           emailRedirectTo: `${window.location.origin}/editor`,
@@ -188,7 +198,7 @@ const AuthPage = () => {
       setLoading(true);
       setAuthError(null);
       
-      const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(values.email.trim().toLowerCase(), {
         redirectTo: `${window.location.origin}/auth`,
       });
 
