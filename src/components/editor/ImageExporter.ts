@@ -15,6 +15,9 @@ export const exportCanvasToImage = async (canvasRef: React.RefObject<HTMLDivElem
     canvasClone.style.position = 'absolute';
     canvasClone.style.left = '-9999px';
     canvasClone.style.top = '-9999px';
+    canvasClone.style.width = canvasRef.current.offsetWidth + 'px';
+    canvasClone.style.height = canvasRef.current.offsetHeight + 'px';
+    canvasClone.style.backgroundColor = 'transparent';
     
     // Insert into DOM temporarily
     document.body.appendChild(canvasClone);
@@ -30,6 +33,8 @@ export const exportCanvasToImage = async (canvasRef: React.RefObject<HTMLDivElem
       if (blendMode) {
         // Explicitly set mix-blend-mode inline style
         element.style.mixBlendMode = blendMode;
+        element.style.backgroundColor = 'transparent';
+        element.style.isolation = 'isolate';
         // Ensure the element has a background to blend with
         element.style.backgroundColor = 'transparent';
       }
@@ -41,6 +46,8 @@ export const exportCanvasToImage = async (canvasRef: React.RefObject<HTMLDivElem
       allowTaint: true,
       backgroundColor: null,
       scale: 4, // Higher scale for better quality
+      foreignObjectRendering: true,
+      removeContainer: true,
       logging: false,
       foreignObjectRendering: true, // Enable foreignObject rendering for better blend mode support
       onclone: (clonedDoc) => {
@@ -52,6 +59,7 @@ export const exportCanvasToImage = async (canvasRef: React.RefObject<HTMLDivElem
           if (blendMode) {
             element.style.mixBlendMode = blendMode;
             element.style.backgroundColor = 'transparent';
+            element.style.isolation = 'isolate';
           }
         });
       }
@@ -63,7 +71,7 @@ export const exportCanvasToImage = async (canvasRef: React.RefObject<HTMLDivElem
     // Create and trigger download
     const link = document.createElement('a');
     link.download = `textblend-${Date.now()}.png`;
-    link.href = canvas.toDataURL('image/png');
+    link.href = canvas.toDataURL('image/png', 1.0);
     link.click();
     
     toast.success("Image downloaded successfully");
