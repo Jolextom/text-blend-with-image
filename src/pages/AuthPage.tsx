@@ -5,9 +5,33 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { Input } from "@/components/ui/input";
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardFooter, 
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/card";
+import { 
+  Form, 
+  FormControl, 
+  FormField, 
+  FormItem, 
+  FormLabel, 
+  FormMessage 
+} from "@/components/ui/form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+
+type AuthMode = "signin" | "signup" | "forgot-password" | "reset-success";
 
 const AuthPage = () => {
   const [loading, setLoading] = useState(false);
+  const [authMode, setAuthMode] = useState<AuthMode>("signin");
   const [authError, setAuthError] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -50,33 +74,68 @@ const AuthPage = () => {
     };
   }, [navigate, location]);
 
-  const handleGoogleSignIn = async () => {
+  const signInSchema = z.object({
+    email: z.string().email({ message: "Please enter a valid email address" }),
+    password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+  });
+
+  const signUpSchema = z.object({
+    email: z.string().email({ message: "Please enter a valid email address" }),
+    password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+    confirmPassword: z.string().min(6, { message: "Please confirm your password" }),
+  })
+  .refine(data => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
+
+  const forgotPasswordSchema = z.object({
+    email: z.string().email({ message: "Please enter a valid email address" }),
+  });
+
+  const signInForm = useForm<z.infer<typeof signInSchema>>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const signUpForm = useForm<z.infer<typeof signUpSchema>>({
+    resolver: zodResolver(signUpSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  const forgotPasswordForm = useForm<z.infer<typeof forgotPasswordSchema>>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      email: "",
+    },
+  });
+
+  const handleSignIn = async (values: z.infer<typeof signInSchema>) => {
     try {
       setLoading(true);
       setAuthError(null);
       
-      // Get the current origin for proper redirect
-      const redirectUrl = `${window.location.origin}/editor`;
-      console.log("Redirecting to:", redirectUrl);
-      
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: redirectUrl,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          }
-        }
+      const { error } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
       });
 
       if (error) {
-        console.error("Auth error:", error);
+        console.error("Sign in error:", error);
         setAuthError(error.message);
         toast.error(error.message);
+      } else {
+        toast.success("Signed in successfully!");
       }
     } catch (error) {
-      console.error("Unexpected auth error:", error);
+      console.error("Unexpected sign in error:", error);
       if (error instanceof Error) {
         setAuthError(error.message);
         toast.error(error.message);
@@ -86,6 +145,235 @@ const AuthPage = () => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSignUp = async (values: z.infer<typeof signUpSchema>) => {
+    try {
+      setLoading(true);
+      setAuthError(null);
+      
+      const { error } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/editor`,
+        }
+      });
+
+      if (error) {
+        console.error("Sign up error:", error);
+        setAuthError(error.message);
+        toast.error(error.message);
+      } else {
+        toast.success("Check your email to confirm your account!");
+        setAuthMode("signin");
+      }
+    } catch (error) {
+      console.error("Unexpected sign up error:", error);
+      if (error instanceof Error) {
+        setAuthError(error.message);
+        toast.error(error.message);
+      } else {
+        setAuthError("An unexpected error occurred");
+        toast.error("An unexpected error occurred");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (values: z.infer<typeof forgotPasswordSchema>) => {
+    try {
+      setLoading(true);
+      setAuthError(null);
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+
+      if (error) {
+        console.error("Password reset error:", error);
+        setAuthError(error.message);
+        toast.error(error.message);
+      } else {
+        toast.success("Password reset link sent to your email!");
+        setAuthMode("reset-success");
+      }
+    } catch (error) {
+      console.error("Unexpected password reset error:", error);
+      if (error instanceof Error) {
+        setAuthError(error.message);
+        toast.error(error.message);
+      } else {
+        setAuthError("An unexpected error occurred");
+        toast.error("An unexpected error occurred");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderForm = () => {
+    switch (authMode) {
+      case "signin":
+        return (
+          <Form {...signInForm}>
+            <form onSubmit={signInForm.handleSubmit(handleSignIn)} className="space-y-4">
+              <FormField
+                control={signInForm.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input placeholder="johndoe@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={signInForm.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="••••••••" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={loading}
+              >
+                {loading ? "Signing in..." : "Sign in"}
+              </Button>
+              <div className="text-center">
+                <Button 
+                  variant="link" 
+                  onClick={() => setAuthMode("forgot-password")} 
+                  className="text-sm p-0 h-auto"
+                  type="button"
+                >
+                  Forgot your password?
+                </Button>
+              </div>
+            </form>
+          </Form>
+        );
+
+      case "signup":
+        return (
+          <Form {...signUpForm}>
+            <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4">
+              <FormField
+                control={signUpForm.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input placeholder="johndoe@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={signUpForm.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="••••••••" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={signUpForm.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="••••••••" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={loading}
+              >
+                {loading ? "Creating account..." : "Create account"}
+              </Button>
+            </form>
+          </Form>
+        );
+
+      case "forgot-password":
+        return (
+          <Form {...forgotPasswordForm}>
+            <form onSubmit={forgotPasswordForm.handleSubmit(handleForgotPassword)} className="space-y-4">
+              <FormField
+                control={forgotPasswordForm.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input placeholder="johndoe@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={loading}
+              >
+                {loading ? "Sending..." : "Send reset link"}
+              </Button>
+              <div className="text-center">
+                <Button 
+                  variant="link" 
+                  onClick={() => setAuthMode("signin")} 
+                  className="text-sm p-0 h-auto"
+                  type="button"
+                >
+                  Back to sign in
+                </Button>
+              </div>
+            </form>
+          </Form>
+        );
+
+      case "reset-success":
+        return (
+          <div className="text-center">
+            <div className="mb-4 text-green-600">
+              <svg className="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Check your email</h3>
+            <p className="text-gray-600 mb-4">We've sent a password reset link to your email address.</p>
+            <Button onClick={() => setAuthMode("signin")}>
+              Back to sign in
+            </Button>
+          </div>
+        );
     }
   };
 
@@ -100,49 +388,57 @@ const AuthPage = () => {
       </header>
 
       <main className="flex-grow flex items-center justify-center bg-gray-50 px-4">
-        <div className="bg-white rounded-lg shadow-md p-8 max-w-md w-full">
-          <h1 className="text-2xl font-bold text-center mb-6">Sign in to TextBlend</h1>
-          
-          {authError && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-md text-sm">
-              <p><strong>Authentication Error:</strong> {authError}</p>
-              <p className="mt-2 text-xs">Please make sure your Supabase project is properly configured with Google OAuth.</p>
+        <Card className="max-w-md w-full">
+          <CardHeader>
+            <CardTitle className="text-2xl text-center">
+              {authMode === "signin" && "Sign in to TextBlend"}
+              {authMode === "signup" && "Create an account"}
+              {authMode === "forgot-password" && "Reset your password"}
+              {authMode === "reset-success" && "Email sent"}
+            </CardTitle>
+            {authMode !== "reset-success" && (
+              <CardDescription className="text-center">
+                {authMode === "signin" 
+                  ? "Enter your details to access your account" 
+                  : authMode === "signup" 
+                  ? "Create an account to get started" 
+                  : "Enter your email to receive a reset link"}
+              </CardDescription>
+            )}
+          </CardHeader>
+          <CardContent>
+            {authError && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertDescription>
+                  {authError}
+                </AlertDescription>
+              </Alert>
+            )}
+            {renderForm()}
+          </CardContent>
+          <CardFooter className="flex flex-col space-y-4">
+            <div className="text-sm text-center text-muted-foreground">
+              {authMode === "signin" ? (
+                <>
+                  Don't have an account yet?{" "}
+                  <Button variant="link" className="p-0 h-auto" onClick={() => setAuthMode("signup")}>
+                    Create an account
+                  </Button>
+                </>
+              ) : authMode === "signup" ? (
+                <>
+                  Already have an account?{" "}
+                  <Button variant="link" className="p-0 h-auto" onClick={() => setAuthMode("signin")}>
+                    Sign in
+                  </Button>
+                </>
+              ) : null}
             </div>
-          )}
-          
-          <div className="space-y-4">
-            <Button 
-              onClick={handleGoogleSignIn}
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-2"
-            >
-              <svg viewBox="0 0 24 24" width="16" height="16">
-                <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
-                  <path fill="#4285F4" d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z" />
-                  <path fill="#34A853" d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.484 53.529 L -25.464 53.529 L -25.464 56.619 C -23.494 60.539 -19.444 63.239 -14.754 63.239 Z" />
-                  <path fill="#FBBC05" d="M -21.484 53.529 C -21.734 52.809 -21.864 52.039 -21.864 51.239 C -21.864 50.439 -21.724 49.669 -21.484 48.949 L -21.484 45.859 L -25.464 45.859 C -26.284 47.479 -26.754 49.299 -26.754 51.239 C -26.754 53.179 -26.284 54.999 -25.464 56.619 L -21.484 53.529 Z" />
-                  <path fill="#EA4335" d="M -14.754 43.989 C -12.984 43.989 -11.404 44.599 -10.154 45.789 L -6.734 42.369 C -8.804 40.429 -11.514 39.239 -14.754 39.239 C -19.444 39.239 -23.494 41.939 -25.464 45.859 L -21.484 48.949 C -20.534 46.099 -17.884 43.989 -14.754 43.989 Z" />
-                </g>
-              </svg>
-              {loading ? "Connecting..." : "Sign in with Google"}
-            </Button>
-          </div>
-          
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-500 mb-4">
+            <div className="text-xs text-center text-muted-foreground">
               By signing in, you agree to our Terms of Service and Privacy Policy.
-            </p>
-            <div className="p-3 bg-blue-50 border border-blue-200 text-blue-700 rounded-md text-xs">
-              <p><strong>Configuration Info:</strong></p>
-              <ul className="list-disc pl-5 mt-1 text-left">
-                <li><strong>Site URL:</strong> {window.location.origin}</li>
-                <li><strong>Redirect URL:</strong> {window.location.origin}/editor</li>
-                <li><strong>Current Page:</strong> {window.location.href}</li>
-              </ul>
-              <p className="mt-2">Make sure these URLs are configured in both Supabase and Google Cloud Console.</p>
             </div>
-          </div>
-        </div>
+          </CardFooter>
+        </Card>
       </main>
 
       <footer className="py-6 bg-gray-50">
