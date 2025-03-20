@@ -22,13 +22,13 @@ export const exportCanvasToImage = async (canvasRef: React.RefObject<HTMLDivElem
     // Force a layout calculation
     void canvasClone.offsetWidth;
     
-    // Ensure all text layers have blend modes correctly applied
+    // Apply blend modes properly to all text layers
     const textLayers = canvasClone.querySelectorAll('[data-text-layer="true"]');
     textLayers.forEach((layer) => {
       const element = layer as HTMLElement;
       const blendMode = element.getAttribute('data-blend-mode');
       if (blendMode) {
-        // Explicitly set mix-blend-mode as inline style for html2canvas
+        // Explicitly set mix-blend-mode inline style
         element.style.mixBlendMode = blendMode;
       }
     });
@@ -40,6 +40,7 @@ export const exportCanvasToImage = async (canvasRef: React.RefObject<HTMLDivElem
       backgroundColor: null,
       scale: 4, // Higher scale for better quality
       logging: false,
+      foreignObjectRendering: false, // This can improve blend mode rendering
       onclone: (clonedDoc) => {
         // Additional processing on cloned document
         const clonedTextLayers = clonedDoc.querySelectorAll('[data-text-layer="true"]');
