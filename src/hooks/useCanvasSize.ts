@@ -18,7 +18,8 @@ export const useCanvasSize = (
       
       const img = new Image();
       img.onload = () => {
-        const maxWidth = Math.min(window.innerWidth * 0.8, 800);
+        const containerWidth = window.innerWidth * (window.innerWidth < 768 ? 0.9 : 0.8);
+        const maxWidth = Math.min(containerWidth, 800);
         const aspectRatio = img.height / img.width;
         
         const width = Math.min(img.width, maxWidth);
@@ -30,10 +31,15 @@ export const useCanvasSize = (
     };
 
     updateCanvasSize();
-    window.addEventListener("resize", updateCanvasSize);
+    
+    const resizeHandler = () => {
+      updateCanvasSize();
+    };
+    
+    window.addEventListener("resize", resizeHandler);
     
     return () => {
-      window.removeEventListener("resize", updateCanvasSize);
+      window.removeEventListener("resize", resizeHandler);
     };
   }, [imageSrc, canvasRef]);
 

@@ -31,9 +31,11 @@ const TextLayerItem = ({
         mixBlendMode: layer.blendMode,
         userSelect: 'none',
         padding: '8px',
+        textShadow: isSelected ? '0 0 2px rgba(0,0,0,0.2)' : 'none',
       }}
       data-text-layer="true"
       data-blend-mode={layer.blendMode}
+      data-font-family={layer.fontFamily}
       onMouseDown={onMouseDown}
     >
       {layer.text}

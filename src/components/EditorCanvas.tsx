@@ -1,8 +1,8 @@
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { TextLayer } from "@/types";
 import TextLayerItem from "./canvas/TextLayerItem";
-import { getAbsolutePosition } from "./canvas/canvasUtils";
+import { getAbsolutePosition, preloadFonts } from "./canvas/canvasUtils";
 import { useCanvasSize } from "@/hooks/useCanvasSize";
 import { useDraggable } from "@/hooks/useDraggable";
 
@@ -30,6 +30,12 @@ const EditorCanvas = ({
     (index, { x, y }) => onUpdateLayer(index, { x, y }),
     canvasRef
   );
+
+  // Preload fonts when text layers change
+  useEffect(() => {
+    const fontFamilies = textLayers.map(layer => layer.fontFamily);
+    preloadFonts(fontFamilies);
+  }, [textLayers]);
 
   return (
     <div 

@@ -1,6 +1,8 @@
 
-import { fonts } from "@/constants/fonts";
+import { fonts, fontsByCategory } from "@/constants/fonts";
 import TextPropertySelect from "./TextPropertySelect";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "../ui/label";
 
 interface FontFamilySelectProps {
   value: string;
@@ -9,14 +11,36 @@ interface FontFamilySelectProps {
 
 const FontFamilySelect = ({ value, onChange }: FontFamilySelectProps) => {
   return (
-    <TextPropertySelect
-      label="Font Family"
-      value={value}
-      options={fonts.map(font => ({ value: font.value, label: font.name }))}
-      onChange={onChange}
-      hint={`(${fonts.length} fonts available)`}
-      style={{ fontFamily: value }}
-    />
+    <div className="space-y-3">
+      <div className="flex justify-between items-center">
+        <Label>Font Family</Label>
+        <span className="text-xs text-gray-500">({fonts.length} fonts available)</span>
+      </div>
+      <Select
+        value={value}
+        onValueChange={onChange}
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="Select font family" style={{ fontFamily: value }} />
+        </SelectTrigger>
+        <SelectContent className="max-h-[300px]">
+          {Object.entries(fontsByCategory).map(([category, categorizedFonts]) => (
+            <SelectGroup key={category}>
+              <SelectLabel className="capitalize">{category.replace('-', ' ')}</SelectLabel>
+              {categorizedFonts.map(font => (
+                <SelectItem 
+                  key={font.value} 
+                  value={font.value}
+                  style={{ fontFamily: font.value }}
+                >
+                  {font.name}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 };
 

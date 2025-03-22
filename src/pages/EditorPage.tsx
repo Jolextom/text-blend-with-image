@@ -22,8 +22,22 @@ const EditorPage = () => {
     link.href = getGoogleFontsLink();
     document.head.appendChild(link);
     
+    // Adding a unique identifier to the link element
+    link.id = 'google-fonts-link';
+    
+    // Check if link already exists
+    const existingLink = document.head.querySelector('#google-fonts-link');
+    if (existingLink) {
+      document.head.removeChild(existingLink);
+    }
+    
+    document.head.appendChild(link);
+    
     return () => {
-      document.head.removeChild(link);
+      const linkElement = document.head.querySelector('#google-fonts-link');
+      if (linkElement) {
+        document.head.removeChild(linkElement);
+      }
     };
   }, []);
 
@@ -36,7 +50,7 @@ const EditorPage = () => {
   const addNewTextLayer = () => {
     const newLayer: TextLayer = {
       id: Date.now().toString(),
-      text: "edit",
+      text: "edit me",
       fontFamily: "Inter",
       fontSize: 60,
       fontWeight: 700,
