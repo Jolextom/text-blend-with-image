@@ -96,7 +96,7 @@ const EditorPage = () => {
           {!image ? (
             <ImageUploader onImageUpload={handleImageUpload} />
           ) : (
-            <div ref={canvasRef} className="relative border rounded-lg overflow-hidden shadow-md bg-white">
+            <div ref={canvasRef} className="relative overflow-hidden">
               <EditorCanvas 
                 image={image} 
                 textLayers={textLayers} 

@@ -1,3 +1,4 @@
+
 import html2canvas from "html2canvas";
 import { toast } from "sonner";
 
@@ -46,13 +47,22 @@ export const exportCanvasToImage = async (canvasRef: React.RefObject<HTMLElement
     // Render the background
     const bgContext = backgroundCanvas.getContext('2d');
     
-    // Render the background content
+    // Render the background content with improved options to avoid borders
     const backgroundImage = await html2canvas(originalElement, {
       useCORS: true,
       allowTaint: true,
       backgroundColor: null,
       scale: 2,
       logging: false,
+      removeContainer: false,
+      // Disable the default border/shadows
+      onclone: (clonedDoc) => {
+        const clonedElement = clonedDoc.querySelector('[data-text-layer]')?.parentElement;
+        if (clonedElement) {
+          clonedElement.style.boxShadow = 'none';
+          clonedElement.style.border = 'none';
+        }
+      }
     });
     
     // Restore text layer visibility
@@ -70,8 +80,12 @@ export const exportCanvasToImage = async (canvasRef: React.RefObject<HTMLElement
       throw new Error("Failed to get canvas context");
     }
     
-    // Draw the background first
-    ctx.drawImage(backgroundImage, 0, 0);
+    // Draw the background first - using drawImage with exact dimensions to avoid white borders
+    ctx.drawImage(
+      backgroundImage, 
+      0, 0, backgroundImage.width, backgroundImage.height,
+      0, 0, finalCanvas.width, finalCanvas.height
+    );
     
     // Now render each text layer with its proper blend mode
     for (const { element, styles } of textLayerStyles) {
@@ -131,15 +145,25 @@ export const exportCanvasToImage = async (canvasRef: React.RefObject<HTMLElement
       ctx.globalCompositeOperation = 'source-over';
     }
     
-    // Create and trigger download
+    // Create and trigger download with fixed dimensions to avoid white borders
     const link = document.createElement('a');
     link.download = `textblend-${Date.now()}.png`;
-    link.href = finalCanvas.toDataURL('image/png', 1.0);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
     
-    toast.success("Image downloaded successfully");
+    // Convert to blob instead of toDataURL to avoid potential quality loss
+    finalCanvas.toBlob((blob) => {
+      if (blob) {
+        link.href = URL.createObjectURL(blob);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        // Clean up the created URL object
+        setTimeout(() => URL.revokeObjectURL(link.href), 100);
+        toast.success("Image downloaded successfully");
+      } else {
+        throw new Error("Failed to create image blob");
+      }
+    }, 'image/png', 1.0);
+    
   } catch (error) {
     console.error("Error downloading image:", error);
     toast.error("Failed to download image");
