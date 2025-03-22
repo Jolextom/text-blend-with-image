@@ -7,12 +7,25 @@ import { TextLayer } from "@/types";
 import EditorHeader from "@/components/editor/EditorHeader";
 import EditorSidebar from "@/components/editor/EditorSidebar";
 import { exportCanvasToImage } from "@/components/editor/ImageExporter";
+import { getGoogleFontsLink } from "@/constants/fonts";
 
 const EditorPage = () => {
   const [image, setImage] = useState<string | null>(null);
   const [textLayers, setTextLayers] = useState<TextLayer[]>([]);
   const [selectedLayerIndex, setSelectedLayerIndex] = useState<number | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
+  
+  // Load Google Fonts
+  useEffect(() => {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = getGoogleFontsLink();
+    document.head.appendChild(link);
+    
+    return () => {
+      document.head.removeChild(link);
+    };
+  }, []);
 
   useEffect(() => {
     if (image && textLayers.length === 0) {

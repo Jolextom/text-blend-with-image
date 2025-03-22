@@ -1,9 +1,9 @@
-
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { TextLayer, MixBlendMode } from "@/types";
+import { fonts } from "@/constants/fonts";
 
 interface TextEditorProps {
   layer: TextLayer;
@@ -11,15 +11,6 @@ interface TextEditorProps {
 }
 
 const TextEditor = ({ layer, onChange }: TextEditorProps) => {
-  const fonts = [
-    { value: "Inter", label: "Inter" },
-    { value: "Arial", label: "Arial" },
-    { value: "Georgia", label: "Georgia" },
-    { value: "Verdana", label: "Verdana" },
-    { value: "Playfair Display", label: "Playfair Display" },
-    { value: "Courier New", label: "Courier New" },
-  ];
-
   const blendModes: { value: MixBlendMode; label: string }[] = [
     { value: "normal", label: "Normal" },
     { value: "multiply", label: "Multiply" },
@@ -54,7 +45,7 @@ const TextEditor = ({ layer, onChange }: TextEditorProps) => {
       <div className="space-y-3">
         <div className="flex justify-between items-center">
           <Label>Font Family</Label>
-          <span className="text-xs text-gray-500">(6 free fonts available)</span>
+          <span className="text-xs text-gray-500">({fonts.length} fonts available)</span>
         </div>
         <Select
           value={layer.fontFamily}
@@ -63,10 +54,10 @@ const TextEditor = ({ layer, onChange }: TextEditorProps) => {
           <SelectTrigger>
             <SelectValue placeholder="Select font" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="max-h-[300px]">
             {fonts.map((font) => (
               <SelectItem key={font.value} value={font.value} style={{ fontFamily: font.value }}>
-                {font.label}
+                {font.name}
               </SelectItem>
             ))}
           </SelectContent>
