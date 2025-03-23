@@ -21,10 +21,12 @@ export const getAbsolutePosition = (
  * Preloads fonts to ensure they're properly rendered in the canvas
  */
 export const preloadFonts = async (fontFamilies: string[]): Promise<void> => {
+  if (!fontFamilies || fontFamilies.length === 0) return Promise.resolve();
+  
   await Promise.all(
     fontFamilies.map(async (fontFamily) => {
       // Skip system fonts that don't need loading
-      if (fontFamily.includes(',')) {
+      if (!fontFamily || fontFamily.includes(',')) {
         return Promise.resolve();
       }
       
@@ -32,6 +34,7 @@ export const preloadFonts = async (fontFamilies: string[]): Promise<void> => {
       if ('fonts' in document) {
         try {
           await (document as any).fonts.load(`1em ${fontFamily}`);
+          console.log(`Font preloaded: ${fontFamily}`);
         } catch (e) {
           console.warn(`Failed to preload font: ${fontFamily}`, e);
         }

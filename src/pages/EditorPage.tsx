@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import ImageUploader from "@/components/ImageUploader";
@@ -7,7 +6,7 @@ import { TextLayer } from "@/types";
 import EditorHeader from "@/components/editor/EditorHeader";
 import EditorSidebar from "@/components/editor/EditorSidebar";
 import { exportCanvasToImage } from "@/components/editor/ImageExporter";
-import { getGoogleFontsLink } from "@/constants/fonts";
+import { getGoogleFontsLink, preloadFonts } from "@/constants";
 
 const EditorPage = () => {
   const [image, setImage] = useState<string | null>(null);
@@ -20,7 +19,6 @@ const EditorPage = () => {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = getGoogleFontsLink();
-    document.head.appendChild(link);
     
     // Adding a unique identifier to the link element
     link.id = 'google-fonts-link';
@@ -33,13 +31,19 @@ const EditorPage = () => {
     
     document.head.appendChild(link);
     
+    // Preload fonts for better performance
+    const fontFamilies = textLayers.map(layer => layer.fontFamily);
+    if (fontFamilies.length > 0) {
+      preloadFonts(fontFamilies);
+    }
+    
     return () => {
       const linkElement = document.head.querySelector('#google-fonts-link');
       if (linkElement) {
         document.head.removeChild(linkElement);
       }
     };
-  }, []);
+  }, [textLayers]);
 
   useEffect(() => {
     if (image && textLayers.length === 0) {

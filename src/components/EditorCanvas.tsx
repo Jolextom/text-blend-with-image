@@ -2,9 +2,10 @@
 import { useRef, useEffect } from "react";
 import { TextLayer } from "@/types";
 import TextLayerItem from "./canvas/TextLayerItem";
-import { getAbsolutePosition, preloadFonts } from "./canvas/canvasUtils";
+import { getAbsolutePosition } from "./canvas/canvasUtils";
 import { useCanvasSize } from "@/hooks/useCanvasSize";
 import { useDraggable } from "@/hooks/useDraggable";
+import { preloadFonts } from "@/constants";
 
 interface EditorCanvasProps {
   image: string;
@@ -34,7 +35,9 @@ const EditorCanvas = ({
   // Preload fonts when text layers change
   useEffect(() => {
     const fontFamilies = textLayers.map(layer => layer.fontFamily);
-    preloadFonts(fontFamilies);
+    if (fontFamilies.length > 0) {
+      preloadFonts(fontFamilies);
+    }
   }, [textLayers]);
 
   return (
