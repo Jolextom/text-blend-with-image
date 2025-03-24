@@ -1,4 +1,3 @@
-
 export type FontCategory = 'serif' | 'sans-serif' | 'display' | 'monospace' | 'handwriting' | 'slab-serif';
 
 export interface Font {
@@ -49,6 +48,8 @@ export const fonts: Font[] = [
   { name: 'Exo 2', value: 'Exo 2', category: 'sans-serif' },
   { name: 'Libre Franklin', value: 'Libre Franklin', category: 'sans-serif' },
   { name: 'Noto Sans TC', value: 'Noto Sans TC', category: 'sans-serif' },
+  { name: 'Zen Kaku Gothic New', value: 'Zen Kaku Gothic New', category: 'sans-serif' },
+  { name: 'Zen Maru Gothic', value: 'Zen Maru Gothic', category: 'sans-serif' },
   
   // Serif fonts
   { name: 'Playfair Display', value: 'Playfair Display', category: 'serif' },
@@ -71,6 +72,9 @@ export const fonts: Font[] = [
   { name: 'Crimson Text', value: 'Crimson Text', category: 'serif' },
   { name: 'Linden Hill', value: 'Linden Hill', category: 'serif' },
   { name: 'Noto Serif JP', value: 'Noto Serif JP', category: 'serif' },
+  { name: 'Zen Old Mincho', value: 'Zen Old Mincho', category: 'serif' },
+  { name: 'Zen Antique', value: 'Zen Antique', category: 'serif' },
+  { name: 'Zen Antique Soft', value: 'Zen Antique Soft', category: 'serif' },
   
   // Display fonts
   { name: 'Abril Fatface', value: 'Abril Fatface', category: 'display' },
@@ -93,6 +97,9 @@ export const fonts: Font[] = [
   { name: 'Big Shoulders Display', value: 'Big Shoulders Display', category: 'display' },
   { name: 'Fugaz One', value: 'Fugaz One', category: 'display' },
   { name: 'Passion One', value: 'Passion One', category: 'display' },
+  { name: 'Zen Tokyo Zoo', value: 'Zen Tokyo Zoo', category: 'display' },
+  { name: 'Zen Dots', value: 'Zen Dots', category: 'display' },
+  { name: 'Zen Loop', value: 'Zen Loop', category: 'display' },
   
   // Monospace fonts
   { name: 'Roboto Mono', value: 'Roboto Mono', category: 'monospace' },
@@ -132,6 +139,7 @@ export const fonts: Font[] = [
   { name: 'Patrick Hand', value: 'Patrick Hand', category: 'handwriting' },
   { name: 'Nanum Pen Script', value: 'Nanum Pen Script', category: 'handwriting' },
   { name: 'Cedarville Cursive', value: 'Cedarville Cursive', category: 'handwriting' },
+  { name: 'Zen Kurenaido', value: 'Zen Kurenaido', category: 'handwriting' },
   
   // Slab Serif fonts
   { name: 'Roboto Slab', value: 'Roboto Slab', category: 'slab-serif' },
@@ -172,58 +180,7 @@ export const fonts: Font[] = [
   { name: 'Copperplate', value: 'Copperplate, serif', category: 'display' },
   { name: 'Optima', value: 'Optima, sans-serif', category: 'sans-serif' },
   { name: 'Didot', value: 'Didot, serif', category: 'serif' },
-  { name: 'Futura', value: 'Futura, sans-serif', category: 'sans-serif' },
-  
-  // Additional fonts to reach 200
-  { name: 'Istok Web', value: 'Istok Web', category: 'sans-serif' },
-  { name: 'Alegreya', value: 'Alegreya', category: 'serif' },
-  { name: 'PT Sans', value: 'PT Sans', category: 'sans-serif' },
-  { name: 'PT Serif', value: 'PT Serif', category: 'serif' },
-  { name: 'Quicksand', value: 'Quicksand', category: 'sans-serif' },
-  { name: 'Rajdhani', value: 'Rajdhani', category: 'sans-serif' },
-  { name: 'Exo', value: 'Exo', category: 'sans-serif' },
-  { name: 'Vollkorn', value: 'Vollkorn', category: 'serif' },
-  { name: 'Abel', value: 'Abel', category: 'sans-serif' },
-  { name: 'Signika Negative', value: 'Signika Negative', category: 'sans-serif' },
-  { name: 'Varela Round', value: 'Varela Round', category: 'sans-serif' },
-  { name: 'Questrial', value: 'Questrial', category: 'sans-serif' },
-  { name: 'Catamaran', value: 'Catamaran', category: 'sans-serif' },
-  { name: 'Saira Condensed', value: 'Saira Condensed', category: 'sans-serif' },
-  { name: 'Gentium Book Basic', value: 'Gentium Book Basic', category: 'serif' },
-  { name: 'Cinzel', value: 'Cinzel', category: 'serif' },
-  { name: 'Amaranth', value: 'Amaranth', category: 'sans-serif' },
-  { name: 'Asap', value: 'Asap', category: 'sans-serif' },
-  { name: 'Neuton', value: 'Neuton', category: 'serif' },
-  { name: 'Playfair', value: 'Playfair', category: 'serif' },
-  { name: 'Anonymous Pro', value: 'Anonymous Pro', category: 'monospace' },
-  { name: 'Cousine', value: 'Cousine', category: 'monospace' },
-  { name: 'Lexend Deca', value: 'Lexend Deca', category: 'sans-serif' },
-  { name: 'Chakra Petch', value: 'Chakra Petch', category: 'sans-serif' },
-  { name: 'Cardo', value: 'Cardo', category: 'serif' },
-  { name: 'Lustria', value: 'Lustria', category: 'serif' },
-  { name: 'Old Standard TT', value: 'Old Standard TT', category: 'serif' },
-  { name: 'Playfair Display SC', value: 'Playfair Display SC', category: 'serif' },
-  { name: 'Neucha', value: 'Neucha', category: 'handwriting' },
-  { name: 'Rock Salt', value: 'Rock Salt', category: 'handwriting' },
-  { name: 'Special Elite', value: 'Special Elite', category: 'display' },
-  { name: 'Chewy', value: 'Chewy', category: 'display' },
-  { name: 'Creepster', value: 'Creepster', category: 'display' },
-  { name: 'Bangers', value: 'Bangers', category: 'display' },
-  { name: 'Ranchers', value: 'Ranchers', category: 'display' },
-  { name: 'Black Ops One', value: 'Black Ops One', category: 'display' },
-  { name: 'Bungee', value: 'Bungee', category: 'display' },
-  { name: 'Bungee Inline', value: 'Bungee Inline', category: 'display' },
-  { name: 'Bungee Shade', value: 'Bungee Shade', category: 'display' },
-  { name: 'Berkshire Swash', value: 'Berkshire Swash', category: 'handwriting' },
-  { name: 'Cormorant', value: 'Cormorant', category: 'serif' },
-  { name: 'Hind', value: 'Hind', category: 'sans-serif' },
-  { name: 'Spartan', value: 'Spartan', category: 'sans-serif' },
-  { name: 'Alegreya Sans', value: 'Alegreya Sans', category: 'sans-serif' },
-  { name: 'Archivo', value: 'Archivo', category: 'sans-serif' },
-  { name: 'Archivo Black', value: 'Archivo Black', category: 'sans-serif' },
-  { name: 'Barlow Condensed', value: 'Barlow Condensed', category: 'sans-serif' },
-  { name: 'Barlow Semi Condensed', value: 'Barlow Semi Condensed', category: 'sans-serif' },
-  { name: 'Josefin Sans', value: 'Josefin Sans', category: 'sans-serif' }
+  { name: 'Futura', value: 'Futura, sans-serif', category: 'sans-serif' }
 ];
 
 // Fonts grouped by category for easier access

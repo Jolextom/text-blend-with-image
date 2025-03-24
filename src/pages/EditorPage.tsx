@@ -6,7 +6,7 @@ import { TextLayer } from "@/types";
 import EditorHeader from "@/components/editor/EditorHeader";
 import EditorSidebar from "@/components/editor/EditorSidebar";
 import { exportCanvasToImage } from "@/components/editor/ImageExporter";
-import { getGoogleFontsLink, preloadFonts } from "@/constants";
+import { getGoogleFontsLink, fonts } from "@/constants/fonts";
 
 const EditorPage = () => {
   const [image, setImage] = useState<string | null>(null);
@@ -16,26 +16,30 @@ const EditorPage = () => {
   
   // Load Google Fonts
   useEffect(() => {
+    // Create a link element for Google Fonts
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = getGoogleFontsLink();
-    
-    // Adding a unique identifier to the link element
     link.id = 'google-fonts-link';
     
-    // Check if link already exists
+    // Remove existing link if it exists
     const existingLink = document.head.querySelector('#google-fonts-link');
     if (existingLink) {
       document.head.removeChild(existingLink);
     }
     
+    // Add the new link
     document.head.appendChild(link);
     
-    // Preload fonts for better performance
-    const fontFamilies = textLayers.map(layer => layer.fontFamily);
-    if (fontFamilies.length > 0) {
-      preloadFonts(fontFamilies);
-    }
+    // Preload all fonts for better performance
+    const preloadFonts = async () => {
+      const fontPromises = fonts.map(font => {
+        return document.fonts.load(`1em "${font.value}"`);
+      });
+      await Promise.all(fontPromises);
+    };
+    
+    preloadFonts().catch(console.error);
     
     return () => {
       const linkElement = document.head.querySelector('#google-fonts-link');
@@ -43,7 +47,7 @@ const EditorPage = () => {
         document.head.removeChild(linkElement);
       }
     };
-  }, [textLayers]);
+  }, []); // Only run once on component mount
 
   useEffect(() => {
     if (image && textLayers.length === 0) {
