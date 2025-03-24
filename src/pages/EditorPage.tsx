@@ -16,46 +16,39 @@ const EditorPage = () => {
   
   // Load Google Fonts
   useEffect(() => {
-    // Create link elements for Google Fonts
+    // Create a single combined stylesheet link with all font families
     const fontLinks = getGoogleFontsLinks();
-    const linkElements = fontLinks.map((href, index) => {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = href;
-      link.id = `google-fonts-link-${index}`;
-      return link;
-    });
+    const linkElement = document.createElement('link');
+    linkElement.rel = 'stylesheet';
+    linkElement.href = fontLinks[0];
+    linkElement.id = 'google-fonts-link';
     
-    // Remove existing links if they exist
-    linkElements.forEach((_, index) => {
-      const existingLink = document.head.querySelector(`#google-fonts-link-${index}`);
-      if (existingLink) {
-        document.head.removeChild(existingLink);
-      }
-    });
+    // Remove any existing font link
+    const existingLink = document.getElementById('google-fonts-link');
+    if (existingLink) {
+      document.head.removeChild(existingLink);
+    }
     
-    // Add the new links
-    linkElements.forEach(link => {
-      document.head.appendChild(link);
-    });
+    // Add the new link
+    document.head.appendChild(linkElement);
     
     // Preload all fonts for better performance
     const preloadFonts = async () => {
-      const fontPromises = fonts.map(font => {
-        return document.fonts.load(`1em "${font.value}"`);
-      });
+      const fontPromises = fonts
+        .filter(font => !font.value.includes(','))
+        .map(font => document.fonts.load(`1em "${font.name}"`));
+      
       await Promise.all(fontPromises);
     };
     
     preloadFonts().catch(console.error);
     
+    // Cleanup function
     return () => {
-      linkElements.forEach((_, index) => {
-        const linkElement = document.head.querySelector(`#google-fonts-link-${index}`);
-        if (linkElement) {
-          document.head.removeChild(linkElement);
-        }
-      });
+      const link = document.getElementById('google-fonts-link');
+      if (link) {
+        document.head.removeChild(link);
+      }
     };
   }, []); // Only run once on component mount
 
