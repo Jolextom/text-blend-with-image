@@ -6,7 +6,7 @@ import { TextLayer } from "@/types";
 import EditorHeader from "@/components/editor/EditorHeader";
 import EditorSidebar from "@/components/editor/EditorSidebar";
 import { exportCanvasToImage } from "@/components/editor/ImageExporter";
-import { getGoogleFontsLink, fonts } from "@/constants/fonts";
+import { getGoogleFontsLinks, fonts } from "@/constants/fonts";
 
 const EditorPage = () => {
   const [image, setImage] = useState<string | null>(null);
@@ -16,20 +16,28 @@ const EditorPage = () => {
   
   // Load Google Fonts
   useEffect(() => {
-    // Create a link element for Google Fonts
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = getGoogleFontsLink();
-    link.id = 'google-fonts-link';
+    // Create link elements for Google Fonts
+    const fontLinks = getGoogleFontsLinks();
+    const linkElements = fontLinks.map((href, index) => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      link.id = `google-fonts-link-${index}`;
+      return link;
+    });
     
-    // Remove existing link if it exists
-    const existingLink = document.head.querySelector('#google-fonts-link');
-    if (existingLink) {
-      document.head.removeChild(existingLink);
-    }
+    // Remove existing links if they exist
+    linkElements.forEach((_, index) => {
+      const existingLink = document.head.querySelector(`#google-fonts-link-${index}`);
+      if (existingLink) {
+        document.head.removeChild(existingLink);
+      }
+    });
     
-    // Add the new link
-    document.head.appendChild(link);
+    // Add the new links
+    linkElements.forEach(link => {
+      document.head.appendChild(link);
+    });
     
     // Preload all fonts for better performance
     const preloadFonts = async () => {
@@ -42,10 +50,12 @@ const EditorPage = () => {
     preloadFonts().catch(console.error);
     
     return () => {
-      const linkElement = document.head.querySelector('#google-fonts-link');
-      if (linkElement) {
-        document.head.removeChild(linkElement);
-      }
+      linkElements.forEach((_, index) => {
+        const linkElement = document.head.querySelector(`#google-fonts-link-${index}`);
+        if (linkElement) {
+          document.head.removeChild(linkElement);
+        }
+      });
     };
   }, []); // Only run once on component mount
 

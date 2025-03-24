@@ -197,12 +197,50 @@ export const getFontFamiliesForLoading = (): string[] => {
   // Filter out system fonts that don't need to be loaded from Google
   const googleFonts = fonts.filter(font => !font.value.includes(','));
   
-  // Return unique font family names
-  return [...new Set(googleFonts.map(font => font.name.replace(/ /g, '+')))];
+  // Prioritize essential fonts first
+  const essentialFonts = [
+    'Inter',
+    'Roboto',
+    'Open Sans',
+    'Lato',
+    'Poppins',
+    'Playfair Display',
+    'Merriweather',
+    'Source Serif Pro',
+    'Abril Fatface',
+    'Anton',
+    'Roboto Mono',
+    'Fira Code',
+    'Dancing Script',
+    'Pacifico',
+    'Roboto Slab'
+  ];
+  
+  const prioritizedFonts = essentialFonts.map(name => 
+    googleFonts.find(font => font.name === name)
+  ).filter((font): font is Font => font !== undefined);
+  
+  const otherFonts = googleFonts.filter(font => !essentialFonts.includes(font.name));
+  
+  // Return unique font family names, prioritizing essential fonts
+  return [...new Set([...prioritizedFonts, ...otherFonts].map(font => font.name.replace(/ /g, '+')))];
+};
+
+// Helper to generate HTML link tags for loading Google Fonts in batches
+export const getGoogleFontsLinks = (): string[] => {
+  const families = getFontFamiliesForLoading();
+  const batchSize = 50; // Load 50 fonts at a time
+  const links: string[] = [];
+  
+  for (let i = 0; i < families.length; i += batchSize) {
+    const batch = families.slice(i, i + batchSize);
+    links.push(`https://fonts.googleapis.com/css2?family=${batch.join('&family=')}&display=swap`);
+  }
+  
+  return links;
 };
 
 // Helper to generate HTML link tag for loading Google Fonts
 export const getGoogleFontsLink = (): string => {
-  const families = getFontFamiliesForLoading();
-  return `https://fonts.googleapis.com/css2?family=${families.join('&family=')}&display=swap`;
+  return getGoogleFontsLinks()[0]; // For backward compatibility
 };
