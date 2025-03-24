@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getGoogleFontsLink } from '@/constants/fonts';
 
 type AuthMode = "signin" | "signup" | "forgot-password" | "reset-success";
 
