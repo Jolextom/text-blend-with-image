@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect } from "react";
 import { toast } from "sonner";
 import ImageUploader from "@/components/ImageUploader";
 import EditorCanvas from "@/components/EditorCanvas";
@@ -6,7 +6,7 @@ import { TextLayer } from "@/types";
 import EditorHeader from "@/components/editor/EditorHeader";
 import EditorSidebar from "@/components/editor/EditorSidebar";
 import { exportCanvasToImage } from "@/components/editor/ImageExporter";
-import { getGoogleFontsLinks, fonts } from "@/constants/fonts";
+import { fonts } from "@/constants";
 
 const EditorPage = () => {
   const [image, setImage] = useState<string | null>(null);
