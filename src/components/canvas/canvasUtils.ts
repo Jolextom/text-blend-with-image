@@ -1,5 +1,17 @@
 import { getGoogleFontsLinks } from '@/constants/fonts';
 
+export const getAbsolutePosition = (
+  relativeX: number,
+  relativeY: number,
+  canvasWidth: number,
+  canvasHeight: number
+) => {
+  return {
+    x: relativeX * canvasWidth,
+    y: relativeY * canvasHeight
+  };
+};
+
 export const preloadFonts = async (): Promise<void> => {
   const links = getGoogleFontsLinks();
   
