@@ -1,5 +1,5 @@
 
-import { useRef, useEffect } from "react";
+import { useEffect } from "react";
 import { TextLayer } from "@/types";
 import TextLayerItem from "./canvas/TextLayerItem";
 import { getAbsolutePosition } from "./canvas/canvasUtils";
