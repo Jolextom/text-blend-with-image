@@ -197,29 +197,6 @@ export const getFontFamiliesForLoading = (): string[] => {
   // Filter out system fonts that don't need to be loaded from Google
   const googleFonts = fonts.filter(font => !font.value.includes(','));
   
-  // Prioritize essential fonts first
-  const essentialFonts = [
-    'Inter',
-    'Roboto',
-    'Open Sans',
-    'Lato',
-    'Poppins',
-    'Playfair Display',
-    'Merriweather',
-    'Source Serif Pro',
-    'Abril Fatface',
-    'Anton',
-    'Roboto Mono',
-    'Fira Code',
-    'Dancing Script',
-    'Pacifico',
-    'Roboto Slab'
-  ];
-  
-  export const getFontFamiliesForLoading = (): string[] => {
-  // Filter out system fonts that don't need to be loaded from Google
-  const googleFonts = fonts.filter(font => !font.value.includes(','));
-  
   // Return unique font family names
   return [...new Set(googleFonts.map(font => font.name.replace(/ /g, '+')))];
 };

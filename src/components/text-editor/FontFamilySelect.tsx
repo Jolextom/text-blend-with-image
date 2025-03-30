@@ -13,16 +13,19 @@ const FontFamilySelect = ({ value, onChange }: FontFamilySelectProps) => {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   
   useEffect(() => {
-    // Add a simple check to see if fonts are loaded
+    // Check if fonts are loaded using the Font Loading API
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(() => {
         setFontsLoaded(true);
       });
     } else {
-      // Fallback for browsers that don't support document.fonts
+      // Fallback for browsers that don't support Font Loading API
       setTimeout(() => setFontsLoaded(true), 2000);
     }
   }, []);
+
+  // Filter out system fonts for the count
+  const googleFontsCount = fonts.filter(font => !font.value.includes(',')).length;
 
   return (
     <div className="space-y-3">
@@ -30,7 +33,7 @@ const FontFamilySelect = ({ value, onChange }: FontFamilySelectProps) => {
         <Label>Font Family</Label>
         <span className="text-xs text-gray-500">
           {fontsLoaded 
-            ? `(${fonts.length} fonts available)` 
+            ? `(${googleFontsCount} fonts available)` 
             : "Loading fonts..."}
         </span>
       </div>

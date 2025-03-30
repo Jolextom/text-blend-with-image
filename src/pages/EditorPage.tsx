@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import ImageUploader from "@/components/ImageUploader";
 import EditorCanvas from "@/components/EditorCanvas";
@@ -6,7 +6,7 @@ import { TextLayer } from "@/types";
 import EditorHeader from "@/components/editor/EditorHeader";
 import EditorSidebar from "@/components/editor/EditorSidebar";
 import { exportCanvasToImage } from "@/components/editor/ImageExporter";
-import { fonts } from "@/constants";
+import { fonts, getGoogleFontsLinks } from "@/constants";
 
 const EditorPage = () => {
   const [image, setImage] = useState<string | null>(null);
@@ -18,39 +18,42 @@ const EditorPage = () => {
   useEffect(() => {
     // Create a single combined stylesheet link with all font families
     const fontLinks = getGoogleFontsLinks();
-    const linkElement = document.createElement('link');
-    linkElement.rel = 'stylesheet';
-    linkElement.href = fontLinks[0];
-    linkElement.id = 'google-fonts-link';
     
-    // Remove any existing font link
-    const existingLink = document.getElementById('google-fonts-link');
-    if (existingLink) {
-      document.head.removeChild(existingLink);
-    }
+    // Remove any existing font links
+    const existingLinks = document.querySelectorAll('link[href*="fonts.googleapis.com"]');
+    existingLinks.forEach(link => link.remove());
     
-    // Add the new link
-    document.head.appendChild(linkElement);
+    // Add all font links
+    fontLinks.forEach(link => {
+      const linkElement = document.createElement('link');
+      linkElement.rel = 'stylesheet';
+      linkElement.href = link;
+      linkElement.id = `google-fonts-link-${link}`;
+      document.head.appendChild(linkElement);
+    });
     
     // Preload all fonts for better performance
     const preloadFonts = async () => {
-      const fontPromises = fonts
-        .filter(font => !font.value.includes(','))
-        .map(font => document.fonts.load(`1em "${font.name}"`));
-      
-      await Promise.all(fontPromises);
+      try {
+        const fontPromises = fonts
+          .filter(font => !font.value.includes(','))
+          .map(font => document.fonts.load(`1em "${font.name}"`));
+        
+        await Promise.all(fontPromises);
+        console.log('All fonts loaded successfully');
+      } catch (error) {
+        console.error('Error loading fonts:', error);
+      }
     };
     
-    preloadFonts().catch(console.error);
+    preloadFonts();
     
     // Cleanup function
     return () => {
-      const link = document.getElementById('google-fonts-link');
-      if (link) {
-        document.head.removeChild(link);
-      }
+      const links = document.querySelectorAll('link[href*="fonts.googleapis.com"]');
+      links.forEach(link => link.remove());
     };
-  }, []); // Only run once on component mount
+  }, []);
 
   useEffect(() => {
     if (image && textLayers.length === 0) {
