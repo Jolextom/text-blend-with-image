@@ -216,20 +216,18 @@ export const getFontFamiliesForLoading = (): string[] => {
     'Roboto Slab'
   ];
   
-  const prioritizedFonts = essentialFonts.map(name => 
-    googleFonts.find(font => font.name === name)
-  ).filter((font): font is Font => font !== undefined);
+  export const getFontFamiliesForLoading = (): string[] => {
+  // Filter out system fonts that don't need to be loaded from Google
+  const googleFonts = fonts.filter(font => !font.value.includes(','));
   
-  const otherFonts = googleFonts.filter(font => !essentialFonts.includes(font.name));
-  
-  // Return unique font family names, prioritizing essential fonts
-  return [...new Set([...prioritizedFonts, ...otherFonts].map(font => font.name.replace(/ /g, '+')))];
+  // Return unique font family names
+  return [...new Set(googleFonts.map(font => font.name.replace(/ /g, '+')))];
 };
 
-// Helper to generate HTML link tags for loading Google Fonts in batches
+// Helper to generate HTML link tags for loading Google Fonts in smaller batches
 export const getGoogleFontsLinks = (): string[] => {
   const families = getFontFamiliesForLoading();
-  const batchSize = 50; // Load 50 fonts at a time
+  const batchSize = 25; // Reduce batch size to 25 fonts at a time for better loading
   const links: string[] = [];
   
   for (let i = 0; i < families.length; i += batchSize) {
