@@ -1,44 +1,40 @@
+import { getGoogleFontsLinks } from '@/constants/fonts';
 
-/**
- * Converts relative position (-100 to 100) to pixel position
- */
-export const getAbsolutePosition = (
-  x: number, 
-  y: number, 
-  canvasWidth: number, 
-  canvasHeight: number
-) => {
-  const centerX = canvasWidth / 2;
-  const centerY = canvasHeight / 2;
+export const preloadFonts = async (): Promise<void> => {
+  const links = getGoogleFontsLinks();
   
-  return {
-    x: centerX + (x / 100) * centerX,
-    y: centerY + (y / 100) * centerY,
-  };
-};
-
-/**
- * Preloads fonts to ensure they're properly rendered in the canvas
- */
-export const preloadFonts = async (fontFamilies: string[]): Promise<void> => {
-  if (!fontFamilies || fontFamilies.length === 0) return Promise.resolve();
+  // Create and load all font link elements
+  const loadPromises = links.map(link => {
+    return new Promise<void>((resolve) => {
+      const linkElement = document.createElement('link');
+      linkElement.rel = 'stylesheet';
+      linkElement.href = link;
+      linkElement.onload = () => resolve();
+      linkElement.onerror = () => {
+        console.error(`Failed to load font link: ${link}`);
+        resolve(); // Resolve anyway to not block the app
+      };
+      document.head.appendChild(linkElement);
+    });
+  });
   
-  await Promise.all(
-    fontFamilies.map(async (fontFamily) => {
-      // Skip system fonts that don't need loading
-      if (!fontFamily || fontFamily.includes(',')) {
-        return Promise.resolve();
-      }
-      
-      // Use font loading API if available
-      if ('fonts' in document) {
-        try {
-          await (document as any).fonts.load(`1em ${fontFamily}`);
-          console.log(`Font preloaded: ${fontFamily}`);
-        } catch (e) {
-          console.warn(`Failed to preload font: ${fontFamily}`, e);
-        }
-      }
-    })
-  );
+  // Wait for all fonts to load (with a timeout)
+  try {
+    const timeoutPromise = new Promise<void>(resolve => {
+      setTimeout(() => {
+        console.warn('Font loading timed out after 5 seconds');
+        resolve();
+      }, 5000);
+    });
+    
+    // Race between actual loading and timeout
+    await Promise.race([
+      Promise.all(loadPromises),
+      timeoutPromise
+    ]);
+    
+    console.log('Fonts preloaded successfully');
+  } catch (error) {
+    console.error('Error preloading fonts:', error);
+  }
 };
