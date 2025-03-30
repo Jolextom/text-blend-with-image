@@ -2,46 +2,43 @@ import type { RefObject } from 'react';
 import html2canvas from "html2canvas";
 import { toast } from "sonner";
 
-export const exportCanvasToImage = async (canvasRef: RefObject<HTMLElement>): Promise<void> => {
-  if (!canvasRef.current) return;
-  
+export const exportCanvasToImage = async (canvasRef: HTMLDivElement): Promise<void> => {
   try {
-    toast.info("Processing image for download...");
-    
-    // Create a canvas with the exact dimensions of the original element
-    const canvas = await html2canvas(canvasRef.current, {
-      backgroundColor: null, // Set background to transparent
-      scale: 2, // Higher quality
-      logging: false,
+    const canvas = await html2canvas(canvasRef, {
       useCORS: true,
       allowTaint: true,
-      removeContainer: true,
-      // Remove any extra space
-      x: 0,
-      y: 0,
-      width: canvasRef.current.offsetWidth,
-      height: canvasRef.current.offsetHeight,
+      backgroundColor: null, // Remove default white background
+      scale: 2, // Higher quality
+      logging: false,
+      removeContainer: false,
+      foreignObjectRendering: true,
     });
 
-    // Convert to blob and download
-    canvas.toBlob((blob) => {
-      if (!blob) {
-        toast.error("Failed to generate image");
-        return;
-      }
-
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.download = 'textblend-image.png';
-      link.href = url;
-      link.click();
-      URL.revokeObjectURL(url);
-      toast.success("Image downloaded successfully!");
-    }, 'image/png');
+    // Create a temporary canvas to handle the image with proper dimensions
+    const tempCanvas = document.createElement('canvas');
+    const ctx = tempCanvas.getContext('2d');
     
+    if (!ctx) {
+      throw new Error('Could not get canvas context');
+    }
+
+    // Get the actual content bounds
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let bounds = {
+      top: 0,
+      left: 0,
+      right: canvas.width,
+      bottom: canvas.height
+    };
+
+    // Create download link
+    const link = document.createElement('a');
+    link.download = 'text-blend-image.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
   } catch (error) {
     console.error('Error exporting image:', error);
-    toast.error("Failed to export image");
+    throw error;
   }
 };
 

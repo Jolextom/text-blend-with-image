@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ChevronRight, Type, Image as ImageIcon, Sliders, Blend } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import ExampleGallery from '@/components/landing/ExampleGallery';
 
 const LandingPage = () => {
   const { session } = useAuth();
@@ -47,6 +48,9 @@ const LandingPage = () => {
             </div>
           </div>
         </section>
+
+        {/* Example Gallery */}
+        <ExampleGallery />
 
         {/* Features Section */}
         <section className="py-20 bg-white">
