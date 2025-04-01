@@ -40,6 +40,7 @@ const FontFamilySelect = ({ value, onChange }: FontFamilySelectProps) => {
   useEffect(() => {
     if (value) {
       preloadFonts([value])
+        .then(() => console.log(`Selected font ${value} loaded`))
         .catch(err => console.warn('Error preloading selected font:', err));
     }
   }, [value]);

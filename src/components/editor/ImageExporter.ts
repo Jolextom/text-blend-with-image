@@ -9,10 +9,13 @@ export const exportCanvasToImage = async (canvasRef: HTMLDivElement): Promise<vo
       useCORS: true,
       allowTaint: true,
       backgroundColor: null, // Keep transparency
-      scale: 2, // Higher quality
+      scale: 3, // Higher quality for better text rendering
       logging: false,
       removeContainer: false,
       foreignObjectRendering: true,
+      // Capture the border as well
+      width: canvasRef.offsetWidth,
+      height: canvasRef.offsetHeight
     });
 
     // Get the content bounds to include everything

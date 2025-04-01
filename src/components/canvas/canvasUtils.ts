@@ -62,8 +62,19 @@ export const preloadFonts = async (specificFonts?: string[]): Promise<void> => {
             .catch(err => console.warn(`Error loading font "${fontFamily}":`, err));
         });
       
-      // Wait for both stylesheet links and specific fonts to load
-      await Promise.all([...loadPromises, ...fontPromises]);
+      // Wait for both stylesheet links and specific fonts to load with a reasonable timeout
+      const timeoutPromise = new Promise<void>(resolve => {
+        setTimeout(() => {
+          console.log(`Specific fonts load timeout reached`);
+          resolve();
+        }, 3000);
+      });
+      
+      await Promise.race([
+        Promise.all([...loadPromises, ...fontPromises]),
+        timeoutPromise
+      ]);
+      
       console.log(`Specific fonts preloaded: ${specificFonts.join(', ')}`);
       return;
     }
@@ -73,7 +84,7 @@ export const preloadFonts = async (specificFonts?: string[]): Promise<void> => {
     const fontFamilies = getFontFamiliesForLoading();
     
     // Load fonts in smaller batches to avoid browser limitations
-    const fontBatchSize = 20;
+    const fontBatchSize = 10;  // Smaller batch size for more reliable loading
     const fontBatches = [];
     
     for (let i = 0; i < fontFamilies.length; i += fontBatchSize) {
@@ -89,14 +100,14 @@ export const preloadFonts = async (specificFonts?: string[]): Promise<void> => {
     // Wait for all font stylesheets to load (with a timeout)
     const timeoutPromise = new Promise<void>(resolve => {
       setTimeout(() => {
-        console.warn('Font loading timed out after 8000ms');
+        console.warn('Font loading timed out after 5000ms');
         resolve();
-      }, 8000);
+      }, 5000);
     });
     
     // Race between actual loading and timeout
     await Promise.race([
-      Promise.all([...loadPromises, ...fontBatches.flat()]),
+      Promise.all([...loadPromises]),
       timeoutPromise
     ]);
     

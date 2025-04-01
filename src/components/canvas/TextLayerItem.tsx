@@ -33,7 +33,10 @@ const TextLayerItem = ({
         padding: '8px',
         textShadow: isSelected ? '0 0 2px rgba(0,0,0,0.2)' : 'none',
         whiteSpace: 'pre-wrap',
-        maxWidth: '80%'
+        maxWidth: '80%',
+        textRendering: 'optimizeLegibility',
+        WebkitFontSmoothing: 'antialiased',
+        MozOsxFontSmoothing: 'grayscale',
       }}
       data-text-layer="true"
       data-blend-mode={layer.blendMode}

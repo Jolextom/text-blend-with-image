@@ -71,8 +71,8 @@ const EditorPage = () => {
     const newLayer = {
       ...layerToDuplicate,
       id: Date.now().toString(),
-      x: layerToDuplicate.x + 20,
-      y: layerToDuplicate.y + 20,
+      x: layerToDuplicate.x + 0.05,
+      y: layerToDuplicate.y + 0.05,
     };
     
     setTextLayers([...textLayers, newLayer]);
@@ -99,15 +99,16 @@ const EditorPage = () => {
   };
 
   const handleSaveImage = async () => {
-    if (canvasRef.current) {
-      try {
-        await exportCanvasToImage(canvasRef.current);
-      } catch (error) {
-        console.error("Error saving image:", error);
-        toast.error("Failed to save image");
-      }
-    } else {
+    if (!canvasRef.current) {
       toast.error("Canvas reference is not available");
+      return;
+    }
+    
+    try {
+      await exportCanvasToImage(canvasRef.current);
+    } catch (error) {
+      console.error("Error saving image:", error);
+      toast.error("Failed to save image");
     }
   };
 
