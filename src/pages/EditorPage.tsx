@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import ImageUploader from "@/components/ImageUploader";
@@ -93,7 +94,11 @@ const EditorPage = () => {
   };
 
   const handleSaveImage = async () => {
-    await exportCanvasToImage(canvasRef);
+    if (canvasRef.current) {
+      await exportCanvasToImage(canvasRef.current);
+    } else {
+      toast.error("Canvas reference is not available");
+    }
   };
 
   return (

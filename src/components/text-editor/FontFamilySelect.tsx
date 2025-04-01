@@ -1,8 +1,10 @@
+
 import { fonts, fontsByCategory } from "@/constants/fonts";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "../ui/label";
 import { ScrollArea } from "../ui/scroll-area";
 import { useState, useEffect } from "react";
+import { preloadFonts } from "@/components/canvas/canvasUtils";
 
 interface FontFamilySelectProps {
   value: string;
@@ -14,18 +16,36 @@ const FontFamilySelect = ({ value, onChange }: FontFamilySelectProps) => {
   
   useEffect(() => {
     // Check if fonts are loaded using the Font Loading API
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(() => {
-        setFontsLoaded(true);
-      });
-    } else {
-      // Fallback for browsers that don't support Font Loading API
-      setTimeout(() => setFontsLoaded(true), 2000);
-    }
+    const checkFontsLoaded = async () => {
+      try {
+        if (document.fonts && document.fonts.ready) {
+          await document.fonts.ready;
+          setFontsLoaded(true);
+          console.log('Fonts are loaded and ready to use');
+        } else {
+          // Fallback for browsers that don't support Font Loading API
+          setTimeout(() => setFontsLoaded(true), 3000);
+        }
+      } catch (error) {
+        console.error('Error checking font loading status:', error);
+        // Assume fonts are loaded after a timeout if there's an error
+        setTimeout(() => setFontsLoaded(true), 3000);
+      }
+    };
+    
+    checkFontsLoaded();
   }, []);
+  
+  // Load the currently selected font if it changes and isn't loaded yet
+  useEffect(() => {
+    if (value) {
+      preloadFonts([value])
+        .catch(err => console.warn('Error preloading selected font:', err));
+    }
+  }, [value]);
 
   // Filter out system fonts for the count
-  const googleFontsCount = fonts.filter(font => !font.value.includes(',')).length;
+  const googleFontsCount = fonts.length;
 
   return (
     <div className="space-y-3">
@@ -49,7 +69,7 @@ const FontFamilySelect = ({ value, onChange }: FontFamilySelectProps) => {
             {Object.entries(fontsByCategory).map(([category, categorizedFonts]) => (
               <SelectGroup key={category}>
                 <SelectLabel className="capitalize sticky top-0 bg-white dark:bg-gray-800 z-10 py-2">
-                  {category.replace('-', ' ')}
+                  {category.replace('-', ' ')} ({categorizedFonts.length})
                 </SelectLabel>
                 {categorizedFonts.map(font => (
                   <SelectItem 

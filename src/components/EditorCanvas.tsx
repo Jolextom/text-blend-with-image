@@ -35,7 +35,10 @@ const EditorCanvas = ({
   useEffect(() => {
     const fontFamilies = textLayers.map(layer => layer.fontFamily);
     if (fontFamilies.length > 0) {
-      preloadFonts(fontFamilies);
+      // Only preload the fonts that are actually used in text layers
+      console.log('Preloading fonts used in text layers:', fontFamilies);
+      preloadFonts(fontFamilies)
+        .catch(err => console.warn('Error preloading fonts for text layers:', err));
     }
   }, [textLayers]);
 
