@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import ImageUploader from "@/components/ImageUploader";
@@ -16,7 +15,6 @@ const EditorPage = () => {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [fontsLoaded, setFontsLoaded] = useState(false);
   
-  // Load all fonts on initial page load
   useEffect(() => {
     const loadFonts = async () => {
       await preloadFonts();
@@ -95,7 +93,13 @@ const EditorPage = () => {
 
   const handleSaveImage = async () => {
     if (canvasRef.current) {
-      await exportCanvasToImage(canvasRef.current);
+      try {
+        await exportCanvasToImage(canvasRef.current);
+        toast.success("Image saved successfully");
+      } catch (error) {
+        console.error("Error saving image:", error);
+        toast.error("Failed to save image");
+      }
     } else {
       toast.error("Canvas reference is not available");
     }

@@ -1,4 +1,4 @@
-import type { RefObject } from 'react';
+
 import html2canvas from "html2canvas";
 import { toast } from "sonner";
 
@@ -13,23 +13,6 @@ export const exportCanvasToImage = async (canvasRef: HTMLDivElement): Promise<vo
       removeContainer: false,
       foreignObjectRendering: true,
     });
-
-    // Create a temporary canvas to handle the image with proper dimensions
-    const tempCanvas = document.createElement('canvas');
-    const ctx = tempCanvas.getContext('2d');
-    
-    if (!ctx) {
-      throw new Error('Could not get canvas context');
-    }
-
-    // Get the actual content bounds
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    let bounds = {
-      top: 0,
-      left: 0,
-      right: canvas.width,
-      bottom: canvas.height
-    };
 
     // Create download link
     const link = document.createElement('a');
