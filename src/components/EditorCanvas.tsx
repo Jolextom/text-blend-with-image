@@ -1,11 +1,10 @@
 
-import { useEffect } from "react";
+import { useRef, useEffect } from "react";
 import { TextLayer } from "@/types";
 import TextLayerItem from "./canvas/TextLayerItem";
-import { getAbsolutePosition } from "./canvas/canvasUtils";
+import { getAbsolutePosition, preloadFonts } from "./canvas/canvasUtils";
 import { useCanvasSize } from "@/hooks/useCanvasSize";
 import { useDraggable } from "@/hooks/useDraggable";
-import { preloadFonts } from "@/constants";
 
 interface EditorCanvasProps {
   image: string;

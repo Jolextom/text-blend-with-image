@@ -6,53 +6,24 @@ import { TextLayer } from "@/types";
 import EditorHeader from "@/components/editor/EditorHeader";
 import EditorSidebar from "@/components/editor/EditorSidebar";
 import { exportCanvasToImage } from "@/components/editor/ImageExporter";
-import { fonts, getGoogleFontsLinks } from "@/constants";
+import { preloadFonts } from "@/components/canvas/canvasUtils";
 
 const EditorPage = () => {
   const [image, setImage] = useState<string | null>(null);
   const [textLayers, setTextLayers] = useState<TextLayer[]>([]);
   const [selectedLayerIndex, setSelectedLayerIndex] = useState<number | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
+  const [fontsLoaded, setFontsLoaded] = useState(false);
   
-  // Load Google Fonts
+  // Load all fonts on initial page load
   useEffect(() => {
-    // Create a single combined stylesheet link with all font families
-    const fontLinks = getGoogleFontsLinks();
-    
-    // Remove any existing font links
-    const existingLinks = document.querySelectorAll('link[href*="fonts.googleapis.com"]');
-    existingLinks.forEach(link => link.remove());
-    
-    // Add all font links
-    fontLinks.forEach(link => {
-      const linkElement = document.createElement('link');
-      linkElement.rel = 'stylesheet';
-      linkElement.href = link;
-      linkElement.id = `google-fonts-link-${link}`;
-      document.head.appendChild(linkElement);
-    });
-    
-    // Preload all fonts for better performance
-    const preloadFonts = async () => {
-      try {
-        const fontPromises = fonts
-          .filter(font => !font.value.includes(','))
-          .map(font => document.fonts.load(`1em "${font.name}"`));
-        
-        await Promise.all(fontPromises);
-        console.log('All fonts loaded successfully');
-      } catch (error) {
-        console.error('Error loading fonts:', error);
-      }
+    const loadFonts = async () => {
+      await preloadFonts();
+      setFontsLoaded(true);
+      console.log('All fonts loaded in EditorPage');
     };
     
-    preloadFonts();
-    
-    // Cleanup function
-    return () => {
-      const links = document.querySelectorAll('link[href*="fonts.googleapis.com"]');
-      links.forEach(link => link.remove());
-    };
+    loadFonts();
   }, []);
 
   useEffect(() => {

@@ -1,3 +1,4 @@
+
 export type FontCategory = 'serif' | 'sans-serif' | 'display' | 'monospace' | 'handwriting' | 'slab-serif';
 
 export interface Font {
@@ -79,12 +80,15 @@ export const fontsByCategory = fonts.reduce((acc, font) => {
 
 // Get a list of font family strings for Google Fonts loading
 export const getFontFamiliesForLoading = (): string[] => {
-  return [...new Set(fonts.map(font => font.name.replace(/ /g, '+')))];
+  return [...new Set(fonts.map(font => font.name))];
 };
 
 // Helper to generate HTML link tags for loading Google Fonts in smaller batches
 export const getGoogleFontsLinks = (): string[] => {
-  const families = getFontFamiliesForLoading();
+  const families = fonts
+    .filter(font => !font.value.includes(',')) // Filter out system fonts with fallbacks
+    .map(font => font.name.replace(/ /g, '+'));
+  
   const batchSize = 15; // Smaller batch size for faster loading
   const links: string[] = [];
   
