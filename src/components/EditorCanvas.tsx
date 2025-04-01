@@ -33,14 +33,14 @@ const EditorCanvas = ({
 
   // Preload fonts when text layers change
   useEffect(() => {
-    const fontFamilies = textLayers.map(layer => layer.fontFamily);
-    if (fontFamilies.length > 0) {
+    if (textLayers.length > 0) {
+      const fontFamilies = textLayers.map(layer => layer.fontFamily);
       // Only preload the fonts that are actually used in text layers
       console.log('Preloading fonts used in text layers:', fontFamilies);
       preloadFonts(fontFamilies)
         .catch(err => console.warn('Error preloading fonts for text layers:', err));
     }
-  }, [textLayers]);
+  }, [textLayers.map(layer => layer.fontFamily).join(',')]);
 
   return (
     <div 
@@ -55,25 +55,16 @@ const EditorCanvas = ({
         className="absolute top-0 left-0 w-full h-full object-cover" 
       />
       
-      {textLayers.map((layer, index) => {
-        const { x: absX, y: absY } = getAbsolutePosition(
-          layer.x, 
-          layer.y, 
-          canvasSize.width, 
-          canvasSize.height
-        );
-        
-        return (
-          <TextLayerItem
-            key={layer.id}
-            layer={layer}
-            isSelected={selectedLayerIndex === index}
-            absX={absX}
-            absY={absY}
-            onMouseDown={(e) => handleMouseDown(e, index)}
-          />
-        );
-      })}
+      {textLayers.map((layer, index) => (
+        <TextLayerItem
+          key={layer.id}
+          layer={layer}
+          isSelected={selectedLayerIndex === index}
+          absX={canvasSize.width * (layer.x + 1) / 2}
+          absY={canvasSize.height * (layer.y + 1) / 2}
+          onMouseDown={(e) => handleMouseDown(e, index)}
+        />
+      ))}
     </div>
   );
 };

@@ -4,29 +4,36 @@ import { toast } from "sonner";
 
 export const exportCanvasToImage = async (canvasRef: HTMLDivElement): Promise<void> => {
   try {
+    // Capture the entire canvas with contents
     const canvas = await html2canvas(canvasRef, {
       useCORS: true,
       allowTaint: true,
-      backgroundColor: null, // Remove default white background
+      backgroundColor: null, // Keep transparency
       scale: 2, // Higher quality
       logging: false,
       removeContainer: false,
       foreignObjectRendering: true,
     });
 
+    // Get the content bounds to include everything
+    const dataUrl = canvas.toDataURL('image/png');
+    
     // Create download link
     const link = document.createElement('a');
-    link.download = 'text-blend-image.png';
-    link.href = canvas.toDataURL('image/png');
+    link.download = 'textblend-image.png';
+    link.href = dataUrl;
     link.click();
+    
+    toast.success("Image exported successfully");
   } catch (error) {
     console.error('Error exporting image:', error);
+    toast.error("Failed to export image");
     throw error;
   }
 };
 
 // Helper function to map CSS blend modes to canvas composite operations
-function mapCssBlendToCanvas(blendMode: string): GlobalCompositeOperation {
+export function mapCssBlendToCanvas(blendMode: string): GlobalCompositeOperation {
   const map: Record<string, GlobalCompositeOperation> = {
     'normal': 'source-over',
     'multiply': 'multiply',

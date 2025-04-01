@@ -62,7 +62,9 @@ const FontFamilySelect = ({ value, onChange }: FontFamilySelectProps) => {
         onValueChange={onChange}
       >
         <SelectTrigger className="w-full">
-          <SelectValue placeholder="Select font family" style={{ fontFamily: value }} />
+          <SelectValue placeholder="Select font family">
+            <span style={{ fontFamily: value }}>{value}</span>
+          </SelectValue>
         </SelectTrigger>
         <SelectContent className="max-h-[400px]">
           <ScrollArea className="h-[350px]">
@@ -75,10 +77,9 @@ const FontFamilySelect = ({ value, onChange }: FontFamilySelectProps) => {
                   <SelectItem 
                     key={font.value} 
                     value={font.value}
-                    style={{ fontFamily: font.value }}
                     className="py-2"
                   >
-                    {font.name}
+                    <span style={{ fontFamily: font.value }}>{font.name}</span>
                   </SelectItem>
                 ))}
               </SelectGroup>

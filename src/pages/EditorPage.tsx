@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import ImageUploader from "@/components/ImageUploader";
@@ -17,9 +18,15 @@ const EditorPage = () => {
   
   useEffect(() => {
     const loadFonts = async () => {
-      await preloadFonts();
-      setFontsLoaded(true);
-      console.log('All fonts loaded in EditorPage');
+      try {
+        await preloadFonts();
+        setFontsLoaded(true);
+        console.log('All fonts loaded in EditorPage');
+      } catch (error) {
+        console.error('Error loading fonts:', error);
+        // Still set to true to not block the UI
+        setFontsLoaded(true);
+      }
     };
     
     loadFonts();
@@ -95,7 +102,6 @@ const EditorPage = () => {
     if (canvasRef.current) {
       try {
         await exportCanvasToImage(canvasRef.current);
-        toast.success("Image saved successfully");
       } catch (error) {
         console.error("Error saving image:", error);
         toast.error("Failed to save image");
@@ -117,7 +123,7 @@ const EditorPage = () => {
           {!image ? (
             <ImageUploader onImageUpload={handleImageUpload} />
           ) : (
-            <div ref={canvasRef} className="relative overflow-hidden">
+            <div ref={canvasRef} className="relative overflow-hidden border border-gray-200 rounded-lg shadow-md">
               <EditorCanvas 
                 image={image} 
                 textLayers={textLayers} 

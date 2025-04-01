@@ -23,7 +23,7 @@ const TextLayerItem = ({
         left: absX,
         top: absY,
         transform: `translate(-50%, -50%) rotate(${layer.rotation}deg) skew(${layer.horizontalTilt}deg, ${layer.verticalTilt}deg)`,
-        fontFamily: layer.fontFamily,
+        fontFamily: `"${layer.fontFamily}", sans-serif`,
         fontSize: `${layer.fontSize}px`,
         fontWeight: layer.fontWeight,
         color: layer.color,
@@ -32,6 +32,8 @@ const TextLayerItem = ({
         userSelect: 'none',
         padding: '8px',
         textShadow: isSelected ? '0 0 2px rgba(0,0,0,0.2)' : 'none',
+        whiteSpace: 'pre-wrap',
+        maxWidth: '80%'
       }}
       data-text-layer="true"
       data-blend-mode={layer.blendMode}
