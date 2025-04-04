@@ -34,6 +34,10 @@ export const useCanvasSize = (
           width = height / aspectRatio;
         }
         
+        // Make sure we have sensible minimum dimensions
+        width = Math.max(300, width);
+        height = Math.max(200, height);
+        
         setCanvasSize({ width, height });
       };
       img.src = imageSrc;

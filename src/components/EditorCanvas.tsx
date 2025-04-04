@@ -2,7 +2,7 @@
 import { useRef, useEffect } from "react";
 import { TextLayer } from "@/types";
 import TextLayerItem from "./canvas/TextLayerItem";
-import { getAbsolutePosition, preloadFonts } from "./canvas/canvasUtils";
+import { preloadFonts } from "./canvas/canvasUtils";
 import { useCanvasSize } from "@/hooks/useCanvasSize";
 import { useDraggable } from "@/hooks/useDraggable";
 
@@ -24,7 +24,7 @@ const EditorCanvas = ({
   const canvasRef = useRef<HTMLDivElement>(null);
   const canvasSize = useCanvasSize(canvasRef, image);
   
-  const [_, { handleMouseDown, handleMouseMove }] = useDraggable(
+  const [_, { handleMouseDown, handleMouseMove, handleKeyDown }] = useDraggable(
     selectedLayerIndex,
     onSelectLayer,
     (index, { x, y }) => onUpdateLayer(index, { x, y }),
@@ -46,8 +46,11 @@ const EditorCanvas = ({
     <div 
       ref={canvasRef}
       style={{ width: canvasSize.width, height: canvasSize.height }}
-      className="relative overflow-hidden"
+      className="relative overflow-hidden touch-manipulation focus:outline-none"
       onMouseMove={handleMouseMove}
+      onTouchMove={handleMouseMove}
+      onKeyDown={handleKeyDown}
+      tabIndex={0} // Make the canvas focusable for keyboard events
     >
       <img 
         src={image} 
@@ -63,6 +66,7 @@ const EditorCanvas = ({
           absX={canvasSize.width * (layer.x + 1) / 2}
           absY={canvasSize.height * (layer.y + 1) / 2}
           onMouseDown={(e) => handleMouseDown(e, index)}
+          onTouchStart={(e) => handleMouseDown(e, index)}
         />
       ))}
     </div>

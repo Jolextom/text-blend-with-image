@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Plus, Copy, Trash2 } from "lucide-react";
+import { Plus, Copy, Trash2, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from "lucide-react";
 import { TextLayer } from "@/types";
 import TextEditor from "@/components/TextEditor";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -48,6 +48,16 @@ const EditorSidebar = ({
                     layer={selectedLayer}
                     onChange={(props) => onUpdateTextLayer(selectedLayerIndex!, props)}
                   />
+                  
+                  <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                    <h3 className="font-medium mb-2">Position Text</h3>
+                    <p className="text-gray-600 text-sm mb-3">
+                      Drag text to position, or use arrow keys for fine control
+                    </p>
+                    <div className="flex items-center justify-center gap-1 text-xs text-gray-500">
+                      <ArrowUp size={16} /> <ArrowDown size={16} /> <ArrowLeft size={16} /> <ArrowRight size={16} />
+                    </div>
+                  </div>
 
                   <div className="grid grid-cols-2 gap-3 mt-6">
                     <Button 
