@@ -18,12 +18,21 @@ export const useCanvasSize = (
       
       const img = new Image();
       img.onload = () => {
-        const containerWidth = window.innerWidth * (window.innerWidth < 768 ? 0.9 : 0.8);
-        const maxWidth = Math.min(containerWidth, 800);
+        // Calculate available space
+        const containerWidth = window.innerWidth * (window.innerWidth < 768 ? 0.9 : 0.55);
+        const containerHeight = window.innerHeight * 0.75; // Limit height to 75% of viewport
+        
+        // Maintain aspect ratio while fitting within container
         const aspectRatio = img.height / img.width;
         
-        const width = Math.min(img.width, maxWidth);
-        const height = width * aspectRatio;
+        let width = Math.min(img.width, containerWidth);
+        let height = width * aspectRatio;
+        
+        // If height exceeds container height, recalculate width based on height
+        if (height > containerHeight) {
+          height = containerHeight;
+          width = height / aspectRatio;
+        }
         
         setCanvasSize({ width, height });
       };

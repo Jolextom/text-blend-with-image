@@ -119,32 +119,36 @@ const EditorPage = () => {
         onSaveImage={handleSaveImage}
       />
 
-      <main className="flex-grow flex md:flex-row flex-col">
-        <div className="w-full md:w-3/5 p-6 flex items-center justify-center min-h-[300px]">
-          {!image ? (
-            <ImageUploader onImageUpload={handleImageUpload} />
-          ) : (
-            <div ref={canvasRef} className="relative overflow-hidden border border-gray-200 rounded-lg shadow-md">
-              <EditorCanvas 
-                image={image} 
-                textLayers={textLayers} 
-                selectedLayerIndex={selectedLayerIndex}
-                onSelectLayer={setSelectedLayerIndex}
-                onUpdateLayer={updateTextLayer}
-              />
-            </div>
-          )}
+      <main className="flex-grow flex flex-col md:flex-row h-[calc(100vh-64px)] overflow-hidden">
+        <div className="w-full md:w-3/5 p-6 flex items-center justify-center overflow-auto">
+          <div className="sticky top-0">
+            {!image ? (
+              <ImageUploader onImageUpload={handleImageUpload} />
+            ) : (
+              <div ref={canvasRef} className="relative overflow-hidden border border-gray-200 rounded-lg shadow-md">
+                <EditorCanvas 
+                  image={image} 
+                  textLayers={textLayers} 
+                  selectedLayerIndex={selectedLayerIndex}
+                  onSelectLayer={setSelectedLayerIndex}
+                  onUpdateLayer={updateTextLayer}
+                />
+              </div>
+            )}
+          </div>
         </div>
 
-        <EditorSidebar
-          image={image}
-          textLayers={textLayers}
-          selectedLayerIndex={selectedLayerIndex}
-          onAddTextLayer={addNewTextLayer}
-          onUpdateTextLayer={updateTextLayer}
-          onDuplicateTextLayer={duplicateTextLayer}
-          onRemoveTextLayer={removeTextLayer}
-        />
+        <div className="w-full md:w-2/5 h-full overflow-y-auto">
+          <EditorSidebar
+            image={image}
+            textLayers={textLayers}
+            selectedLayerIndex={selectedLayerIndex}
+            onAddTextLayer={addNewTextLayer}
+            onUpdateTextLayer={updateTextLayer}
+            onDuplicateTextLayer={duplicateTextLayer}
+            onRemoveTextLayer={removeTextLayer}
+          />
+        </div>
       </main>
     </div>
   );
