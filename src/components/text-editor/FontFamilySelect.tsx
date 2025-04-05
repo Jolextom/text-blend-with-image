@@ -13,7 +13,7 @@ interface FontFamilySelectProps {
 
 const FontFamilySelect = ({ value, onChange }: FontFamilySelectProps) => {
   const [fontsLoaded, setFontsLoaded] = useState(false);
-  
+
   useEffect(() => {
     // Check if fonts are loaded using the Font Loading API
     const checkFontsLoaded = async () => {
@@ -21,7 +21,7 @@ const FontFamilySelect = ({ value, onChange }: FontFamilySelectProps) => {
         if (document.fonts && document.fonts.ready) {
           await document.fonts.ready;
           setFontsLoaded(true);
-          console.log('Fonts are loaded and ready to use');
+          // console.log('Fonts are loaded and ready to use');
         } else {
           // Fallback for browsers that don't support Font Loading API
           setTimeout(() => setFontsLoaded(true), 3000);
@@ -32,10 +32,10 @@ const FontFamilySelect = ({ value, onChange }: FontFamilySelectProps) => {
         setTimeout(() => setFontsLoaded(true), 3000);
       }
     };
-    
+
     checkFontsLoaded();
   }, []);
-  
+
   // Load the currently selected font if it changes and isn't loaded yet
   useEffect(() => {
     if (value) {
@@ -47,14 +47,15 @@ const FontFamilySelect = ({ value, onChange }: FontFamilySelectProps) => {
 
   // Filter out system fonts for the count
   const googleFontsCount = fonts.length;
+  console.log(googleFontsCount)
 
   return (
     <div className="space-y-3">
       <div className="flex justify-between items-center">
         <Label>Font Family</Label>
         <span className="text-xs text-gray-500">
-          {fontsLoaded 
-            ? `(${googleFontsCount} fonts available)` 
+          {fontsLoaded
+            ? `(${googleFontsCount} fonts available)`
             : "Loading fonts..."}
         </span>
       </div>
@@ -69,22 +70,27 @@ const FontFamilySelect = ({ value, onChange }: FontFamilySelectProps) => {
         </SelectTrigger>
         <SelectContent className="max-h-[400px]">
           <ScrollArea className="h-[350px]">
-            {Object.entries(fontsByCategory).map(([category, categorizedFonts]) => (
-              <SelectGroup key={category}>
-                <SelectLabel className="capitalize sticky top-0 bg-white dark:bg-gray-800 z-10 py-2">
-                  {category.replace('-', ' ')} ({categorizedFonts.length})
-                </SelectLabel>
-                {categorizedFonts.map(font => (
-                  <SelectItem 
-                    key={font.value} 
-                    value={font.value}
-                    className="py-2"
-                  >
-                    <span style={{ fontFamily: font.value }}>{font.name}</span>
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            ))}
+            {Object.entries(fontsByCategory).map(([category, categorizedFonts]) => {
+              // console.log(category, categorizedFonts);
+
+              return (
+                <SelectGroup key={category}>
+                  <SelectLabel className="capitalize sticky top-0 bg-white dark:bg-gray-800 z-10 py-2">
+                    {category.replace('-', ' ')} ({categorizedFonts.length})
+                  </SelectLabel>
+                  {categorizedFonts.map(font => (
+                    <SelectItem
+                      key={`${category}-${font.value}`}
+                      value={font.value}
+                      className="py-2"
+                    >
+                      <span style={{ fontFamily: font.value }}>{font.name}</span>
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              );
+            })}
+
           </ScrollArea>
         </SelectContent>
       </Select>
